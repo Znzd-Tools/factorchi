@@ -1,0 +1,18 @@
+export const ROUTES = {
+	home: '/',
+	dashboard: '/dashboard',
+	login: '/login',
+	register: '/register',
+	profile: '/profile',
+	paymentMethods: '/profile/payment-methods',
+	projects: '/projects',
+	projectNew: '/projects/new',
+	project: (id: string) => `/projects/${id}`,
+	projectSettings: (id: string) => `/projects/${id}/settings`,
+	projectTimesheet: (id: string) => `/projects/${id}/timesheet`,
+	projectInvoices: (id: string) => `/projects/${id}/invoices`,
+	projectInvoiceNew: (id: string) => `/projects/${id}/invoices/new`,
+	projectInvoice: (projectId: string, invoiceId: string) =>
+		`/projects/${projectId}/invoices/${invoiceId}`,
+	invoicePreview: (projectId: string) => `/projects/${projectId}/invoices/preview`,
+} as const;
