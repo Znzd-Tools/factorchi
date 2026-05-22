@@ -1,0 +1,30 @@
+---
+description: Mandatory repo-wide engineering standards for factorchi
+alwaysApply: true
+---
+
+# Core FE Next.js Governance
+
+This repository is strict. Enforce these rules on every task:
+
+- Treat this repo as a rewrite of `factorchi` with a new structure; preserve the same product behavior and business logic.
+- UI/UX parity with `factorchi` is mandatory unless a product-approved change is explicitly requested.
+- Allowed deltas from `factorchi`: code style/organization, framework/runtime (`Next.js`), styling layer (`Tailwind`), and state implementation (`Zustand` + React Context).
+- Use existing architecture first; do not introduce new patterns when a local one already exists.
+- Follow `docs/DEVELOPER_ONBOARDING.md` as project source of truth and keep changes aligned with it.
+- Never bypass quality gates in code suggestions: `npm run lint`, `npm run tsc`, `npm run test:pre-push`.
+- Respect Husky + commitlint conventions (`@commitlint/config-angular`): `type(scope): subject`.
+- Do not add `console`, `alert`, unused imports, duplicate imports, `var`, or weak equality (`==`).
+- Keep route usage centralized with `ROUTES` from `@/config/routes` instead of hardcoded path strings.
+- Use TypeScript path aliases (`@/...`) instead of deep relative imports.
+- Keep browser-exposed secrets out of code and docs; never leak `.env` values or real keys.
+- Always check existing components before building new ones; reuse whenever the component is reusable.
+- Reuse existing components first; do not duplicate UI blocks or create near-identical component variants.
+- Prefer minimal, incremental refactors; avoid broad rewrites unless explicitly requested.
+
+Delivery expectations for generated code:
+
+1. Root-cause first, then fix.
+2. Keep edits narrow and production-safe.
+3. Add or update tests for non-trivial logic.
+4. Verify lint/type/test impact before finalizing.

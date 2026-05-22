@@ -1,0 +1,29 @@
+---
+description: Feature-module architecture and layering constraints
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Architecture and Module Rules
+
+Apply the project layering model strictly:
+
+- Domain code belongs in `src/features/<feature>/` (`components`, `services`, `endpoints`, `interface`, `hooks`, `utils`).
+- Shared cross-feature UI belongs in `src/components`; avoid leaking feature-specific UI into shared space.
+- Before creating a new component, check for reusable equivalents in `src/components` and feature-level shared blocks; prefer extension/composition over duplication.
+- Keep pages/layouts in `src/app` thin: compose feature components, providers, and routing only.
+- Put API calls in feature services (`*Service.ts`) and endpoint modules; never call axios directly inside UI components.
+- Reuse base HTTP abstractions (`BaseAxiosService`, `CrudService`) unless there is a hard technical reason not to.
+- Use `src/config/routes.ts` for route strings; avoid duplicating route literals in components/hooks.
+- Do not add Redux; use Zustand and existing React Context patterns for shared state.
+- New shared mutable state should prefer Zustand over introducing new cross-cutting Context providers.
+- Respect current folder naming reality (`intreface` typo) unless a dedicated migration is requested.
+- Tailwind is part of the default styling toolbox; use it with existing design tokens/components, not as a reason to change UI behavior.
+
+When adding a new feature or major module:
+
+1. Define interfaces first.
+2. Add endpoints/constants.
+3. Implement service methods.
+4. Implement hook-level business logic.
+5. Keep presentational component focused on rendering and event wiring.

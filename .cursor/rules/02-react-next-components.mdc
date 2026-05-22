@@ -1,0 +1,20 @@
+---
+description: React/Next component and hook conventions for TSX files
+globs: src/**/*.{tsx}
+alwaysApply: false
+---
+
+# React and Next.js Component Rules
+
+- Use functional components and colocated custom hooks (`useX`) for non-trivial logic.
+- Keep presentational components thin: props in, UI out. Move fetching/transform/mutation logic to hooks/services.
+- Use `'use client'` only where hooks/context/browser APIs are required.
+- Keep forms aligned with project stack: Tailwind + `react-hook-form`.
+- Keep component and hook names explicit (`PascalCase` components, `camelCase` functions, `use*` hooks).
+- Preserve existing `IComponentProps` / `I...Props` interface naming style within each feature.
+- Avoid expensive re-computation in render; memoize only where profiling or clear hot-path evidence justifies it.
+- Avoid creating new global providers for local concerns.
+- Ensure dependency arrays in `useEffect/useMemo/useCallback` are manually audited (exhaustive-deps is disabled).
+- Avoid hydration pitfalls: guard browser-only APIs with `typeof window !== 'undefined'`.
+- Keep Tailwind utility usage readable; avoid long unreadable class chains when a reusable wrapper exists.
+- Prefer shared wrapper components from `src/components/atoms` before adding new primitives.

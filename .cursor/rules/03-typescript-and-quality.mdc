@@ -1,0 +1,25 @@
+---
+description: TypeScript, lint, and formatting rules for all source files
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript and Quality Rules
+
+- Write TypeScript-first code; avoid `any` unless unavoidable and explicitly justified.
+- Even with `strict: false`, type new/modified public contracts aggressively (props, service payloads, return types).
+- Prefer explicit interfaces for shared contracts and DTO-like objects.
+- Use `const` by default, `let` only when mutation is required, never `var`.
+- Keep imports clean and deterministic: no unused/duplicate imports.
+- Follow ESLint rules in `.eslintrc.json` as non-negotiable quality constraints.
+- Follow Prettier config exactly (`tabs`, `singleQuote`, `jsxSingleQuote`, `semi`, `trailingComma: all`).
+- Use object shorthand and modern ES syntax when equivalent behavior is preserved.
+- Avoid empty `catch`/empty function blocks unless there is an intentional documented reason.
+- Keep utility functions pure when possible and place shared logic in `src/utils`.
+- Keep files focused; split overly large modules before adding more complexity.
+
+Before finalizing any non-trivial change, validate with:
+
+1. `npm run lint`
+2. `npm run tsc`
+3. `npm run test` (or targeted Jest tests)

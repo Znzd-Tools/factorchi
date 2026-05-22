@@ -1,0 +1,18 @@
+---
+description: API service-layer, security, and performance constraints
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Services, Security, and Performance Rules
+
+- API integration must go through service classes and endpoint builders; do not embed API URLs in UI code.
+- Do not log tokens, contracts, secrets, or raw sensitive payloads.
+- Treat all `NEXT_PUBLIC_*` values as public; never put private secrets in browser-exposed env variables.
+- Avoid `dangerouslySetInnerHTML`; if unavoidable, require explicit sanitization.
+- Keep network calls cancellable/abort-safe in high-frequency UI flows.
+- Avoid N+1 request patterns in hooks/components; batch or reuse data when possible.
+- Prefer server/API pagination and filtering over large client-side loops for list-heavy screens.
+- Avoid heavy synchronous transformations in render paths; move to memoized selectors or pre-processing.
+- Reuse existing chart/table wrappers and shared utilities before creating expensive new abstractions.
+- Keep `next.config.mjs` constraints in mind (`reactStrictMode: false`, `images.unoptimized: true`) when proposing perf changes.

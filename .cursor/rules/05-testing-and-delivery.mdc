@@ -1,0 +1,23 @@
+---
+description: Testing expectations and CI-safe delivery standards
+alwaysApply: true
+---
+
+# Testing and Delivery Rules
+
+- Every bug fix should include a regression test or a clear reason why test coverage is not feasible.
+- Add unit tests for pure helpers, hooks with branching logic, and critical UI state transitions.
+- Prefer Testing Library patterns that verify behavior over implementation details.
+- Keep tests deterministic: avoid time/network flakiness and hidden global state coupling.
+- Preserve Jest setup conventions (`next/jest`, `jest-environment-jsdom`, `jest.setup.ts`).
+- Respect current alias usage in tests; when alias mapping breaks, fix mapper config instead of downgrading imports.
+- Pre-push gate is mandatory: lint + test (`.husky/pre-push`).
+- CI quality stage expects `npm run tsc`, `npm run lint`, and commitlint-compatible commit history.
+- Do not propose `--no-verify` or bypassing checks except emergency hotfixes explicitly requested by maintainers.
+
+Minimum validation checklist before merge:
+
+1. Lint clean.
+2. Typecheck clean.
+3. Affected tests pass.
+4. Manual smoke path verified for changed routes/flows.
