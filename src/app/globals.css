@@ -73,6 +73,10 @@ textarea::placeholder {
 		display: none !important;
 	}
 
+	[data-sonner-toaster] {
+		display: none !important;
+	}
+
 	.print-only {
 		display: block !important;
 	}

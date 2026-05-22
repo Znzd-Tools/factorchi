@@ -35,7 +35,7 @@ export default async function ProjectLayout({ children, params }: IProjectLayout
 
 	return (
 		<div className='space-y-4'>
-			<div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+			<div className='no-print flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
 				<div>
 					<Link
 						href={ROUTES.projects}
@@ -55,8 +55,12 @@ export default async function ProjectLayout({ children, params }: IProjectLayout
 				</Link>
 			</div>
 
-			<Suspense fallback={<div className='h-11 animate-pulse rounded-t-xl bg-muted' />}>
-				<ProjectTabs projectId={project.id} projectType={project.type} />
+			<Suspense
+				fallback={<div className='no-print h-11 animate-pulse rounded-t-xl bg-muted' />}
+			>
+				<div className='no-print'>
+					<ProjectTabs projectId={project.id} projectType={project.type} />
+				</div>
 			</Suspense>
 			{children}
 		</div>
