@@ -1,0 +1,60 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+import { Card } from '@/components/atoms/Card';
+import { ROUTES } from '@/config/routes';
+import { getProjectInvoices } from '@/features/invoice/actions/invoice.actions';
+import { InvoiceList } from '@/features/invoice/components/InvoiceList';
+import { createClient } from '@/lib/supabase/server';
+
+interface IProjectInvoicesPageProps {
+	params: Promise<{ id: string }>;
+}
+
+export default async function ProjectInvoicesPage({ params }: IProjectInvoicesPageProps) {
+	const { id } = await params;
+	const supabase = await createClient();
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+
+	if (!user) {
+		notFound();
+	}
+
+	const { data: project } = await supabase
+		.from('projects')
+		.select('id, name, currency')
+		.eq('id', id)
+		.eq('user_id', user.id)
+		.single();
+
+	if (!project) {
+		notFound();
+	}
+
+	const invoices = await getProjectInvoices(project.id);
+
+	return (
+		<div className='space-y-6'>
+			<div className='flex flex-wrap items-center justify-between gap-3'>
+				<div>
+					<Link href={ROUTES.project(project.id)} className='text-sm text-blue-600 hover:underline'>
+						← بازگشت به پروژه
+					</Link>
+					<h1 className='mt-2 text-2xl font-black text-slate-900'>فاکتورهای {project.name}</h1>
+				</div>
+				<Link
+					href={ROUTES.invoicePreview(project.id)}
+					className='text-sm text-slate-500 hover:text-slate-800'
+				>
+					نمایش دمو قدیمی
+				</Link>
+			</div>
+
+			<Card>
+				<InvoiceList projectId={project.id} invoices={invoices} currency={project.currency} />
+			</Card>
+		</div>
+	);
+}
