@@ -10,6 +10,7 @@ import {
 
 import { Card } from '@/components/atoms/Card';
 import { getCurrencySymbol } from '@/features/invoice/constants/currencies';
+import { ProjectWhatIfCalculator } from '@/features/projects/components/ProjectWhatIfCalculator';
 import { computeDashboardStats } from '@/features/projects/utils/dashboard-stats';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
@@ -145,6 +146,15 @@ export default async function ProjectDashboardPage({
 							</div>
 						</Card>
 					</div>
+
+					{project.hourly_rate != null && (
+						<ProjectWhatIfCalculator
+							monthlyHours={monthlyTotals.totalHours}
+							monthlyAmount={monthlyTotals.totalAmount}
+							hourlyRate={Number(project.hourly_rate)}
+							currencySymbol={currencySymbol}
+						/>
+					)}
 				</div>
 			)}
 		</div>
