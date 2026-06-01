@@ -12,6 +12,7 @@ export const ROUTES = {
 	project: (id: string) => `/projects/${id}`,
 	projectSettings: (id: string) => `/projects/${id}/settings`,
 	projectTimesheet: (id: string) => `/projects/${id}/timesheet`,
+	projectTodos: (id: string) => `/projects/${id}/todos`,
 	projectInvoices: (id: string) => `/projects/${id}/invoices`,
 	projectInvoiceNew: (id: string) => `/projects/${id}/invoices/new`,
 	projectInvoice: (projectId: string, invoiceId: string) =>

@@ -1,5 +1,6 @@
 import { AppShell } from '@/components/layout/AppShell';
 import { CelebrationHost } from '@/features/engagement/components/CelebrationHost';
+import { FocusTimerHost } from '@/features/focus-timer/components/FocusTimerHost';
 import { requireUser } from '@/lib/auth/require-user';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -7,7 +8,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
 	return (
 		<CelebrationHost>
-			<AppShell>{children}</AppShell>
+			<FocusTimerHost>
+				<AppShell>{children}</AppShell>
+			</FocusTimerHost>
 		</CelebrationHost>
 	);
 }

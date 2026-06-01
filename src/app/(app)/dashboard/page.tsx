@@ -22,6 +22,7 @@ import {
 } from '@/features/dashboard/utils/stats';
 import { StreakCard } from '@/features/engagement/components/StreakCard';
 import { MonthlyGoalsCard } from '@/features/goals/components/MonthlyGoalsCard';
+import { DashboardFocusTimerCtas } from '@/features/focus-timer/components/DashboardFocusTimerCtas';
 import { QuickLogTeaser } from '@/features/timesheet/components/QuickLogTeaser';
 import { WrappedTeaser } from '@/features/engagement/components/WrappedTeaser';
 import { computeMonthlyWrapped } from '@/features/engagement/utils/monthly-wrapped';
@@ -43,13 +44,23 @@ export default async function DashboardPage() {
 	const { year, month } = getCurrentJalaliMonth();
 	const monthRange = getJalaliMonthRange(year, month);
 
-	const [{ data: projects }, { data: timeEntries }, { data: invoices }] = await Promise.all([
+	const [{ data: projects }, { data: timeEntries }, { data: invoices }, { data: hourlyProjects }] =
+		await Promise.all([
 		supabase.from('projects').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }),
 		supabase.from('time_entries').select('project_id, hours, work_date').eq('user_id', user.id),
 		supabase
 			.from('invoices')
 			.select('project_id, status, total, issue_date')
 			.eq('user_id', user.id),
+		supabase
+			.from('projects')
+			.select('id, name')
+			.eq('user_id', user.id)
+			.eq('status', 'active')
+			.eq('type', 'hourly')
+			.not('hourly_rate', 'is', null)
+			.order('updated_at', { ascending: false })
+			.limit(8),
 	]);
 
 	const monthlyTimeEntries = (timeEntries ?? []).filter(
@@ -154,6 +165,13 @@ export default async function DashboardPage() {
 			<StreakCard streak={streak} />
 
 			<QuickLogTeaser />
+
+			<DashboardFocusTimerCtas
+				projects={(hourlyProjects ?? []).map((project) => ({
+					id: project.id,
+					name: project.name,
+				}))}
+			/>
 
 			<WrappedTeaser
 				stats={{

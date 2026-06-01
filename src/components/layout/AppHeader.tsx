@@ -40,6 +40,10 @@ function resolveTitle(pathname: string): string {
 		return 'تایم‌شیت';
 	}
 
+	if (pathname.startsWith('/projects/') && pathname.includes('/todos')) {
+		return 'کارها';
+	}
+
 	if (pathname.startsWith('/projects/') && pathname.includes('/settings')) {
 		return 'تنظیمات';
 	}

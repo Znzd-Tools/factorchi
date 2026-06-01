@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import { Button } from '@/components/atoms/Button';
 import { Card } from '@/components/atoms/Card';
 import { ROUTES } from '@/config/routes';
+import { listOpenProjectTodos } from '@/features/todos/queries/project-todo.queries';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
 import { TimesheetEntriesTable } from '@/features/timesheet/components/TimesheetEntriesTable';
@@ -55,7 +56,10 @@ export default async function TimesheetPage({ params, searchParams }: ITimesheet
 		);
 	}
 
-	const entries = await getMonthlyEntries(id, sp.year, sp.month);
+	const [entries, openTodos] = await Promise.all([
+		getMonthlyEntries(id, sp.year, sp.month),
+		listOpenProjectTodos(id),
+	]);
 	const totals = aggregateMonthly(entries);
 	const currencyLabel = getCurrencyLabel(project.currency);
 
@@ -85,6 +89,7 @@ export default async function TimesheetPage({ params, searchParams }: ITimesheet
 				year={sp.year}
 				month={sp.month}
 				entries={entries}
+				openTodos={openTodos}
 			/>
 		</div>
 	);
