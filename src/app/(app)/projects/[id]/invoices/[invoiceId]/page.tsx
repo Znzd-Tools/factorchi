@@ -1,9 +1,8 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { ROUTES } from '@/config/routes';
-import { getInvoiceDetail } from '@/features/invoice/actions/invoice.actions';
+import { InvoiceDetailPanel } from '@/features/invoice/components/InvoiceDetailPanel';
 import { ProjectInvoicePreview } from '@/features/invoice/components/ProjectInvoicePreview';
+import { getInvoiceDetail } from '@/features/invoice/actions/invoice.actions';
 
 interface IInvoiceDetailPageProps {
 	params: Promise<{ id: string; invoiceId: string }>;
@@ -18,15 +17,16 @@ export default async function InvoiceDetailPage({ params }: IInvoiceDetailPagePr
 	}
 
 	return (
-		<div className='space-y-4'>
-			<div className='no-print'>
-				<Link
-					href={ROUTES.projectInvoices(id)}
-					className='text-sm text-blue-600 hover:underline'
-				>
-					← بازگشت به فاکتورها
-				</Link>
-			</div>
+		<div className='space-y-5'>
+			<InvoiceDetailPanel
+				projectId={id}
+				invoiceId={invoice.id}
+				invoiceNo={invoice.invoice_no}
+				issueDate={invoice.issue_date}
+				total={Number(invoice.total)}
+				currency={invoice.project.currency}
+				status={invoice.status}
+			/>
 
 			<ProjectInvoicePreview invoice={invoice} />
 		</div>
