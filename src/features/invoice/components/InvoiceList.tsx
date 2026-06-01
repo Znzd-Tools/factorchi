@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/atoms/Button';
 import { Select } from '@/components/atoms/Select';
 import { ROUTES } from '@/config/routes';
+import { useCelebration } from '@/features/engagement/context/CelebrationContext';
 import { updateInvoiceStatus } from '@/features/invoice/actions/invoice.actions';
 import {
 	INVOICE_STATUS_LABELS,
@@ -31,6 +32,7 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 		ALL_STATUS_FILTER,
 	);
 	const [isPending, startTransition] = useTransition();
+	const { trigger: triggerCelebration } = useCelebration();
 
 	const currencySymbol = getCurrencySymbol(currency);
 
@@ -60,6 +62,10 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 			}
 
 			toast.success(result.success ?? 'وضعیت به‌روزرسانی شد.');
+
+			if (result.celebration) {
+				triggerCelebration(result.celebration);
+			}
 		});
 	};
 

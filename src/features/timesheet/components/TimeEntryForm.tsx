@@ -10,6 +10,7 @@ import { DurationInput } from '@/components/atoms/DurationInput';
 import { Input } from '@/components/atoms/Input';
 import { JalaliDatePicker } from '@/components/atoms/JalaliDatePicker';
 import { Modal } from '@/components/atoms/Modal';
+import { useCelebration } from '@/features/engagement/context/CelebrationContext';
 import {
 	createTimeEntry,
 	updateTimeEntry,
@@ -32,6 +33,7 @@ export function TimeEntryForm({
 	entry,
 }: ITimeEntryFormProps) {
 	const router = useRouter();
+	const { trigger: triggerCelebration } = useCelebration();
 	const [pending, startTransition] = useTransition();
 	const [workDate, setWorkDate] = useState(entry?.work_date ?? defaultWorkDate);
 	const [hours, setHours] = useState<number | ''>(entry?.hours ?? '');
@@ -73,6 +75,11 @@ export function TimeEntryForm({
 			}
 
 			toast.success(result.success);
+
+			if (result.celebration) {
+				triggerCelebration(result.celebration);
+			}
+
 			onClose();
 			router.refresh();
 		});

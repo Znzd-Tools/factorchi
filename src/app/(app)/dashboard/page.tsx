@@ -19,6 +19,8 @@ import {
 	getDashboardGreeting,
 	getFunInsight,
 } from '@/features/dashboard/utils/stats';
+import { StreakCard } from '@/features/engagement/components/StreakCard';
+import { computeTimeStreak } from '@/features/engagement/utils/time-streak';
 import {
 	formatJalaliMonthLabel,
 	getCurrentJalaliMonth,
@@ -52,6 +54,9 @@ export default async function DashboardPage() {
 		monthlyTimeEntries,
 		invoices: invoices ?? [],
 	});
+
+	const workDates = [...new Set((timeEntries ?? []).map((entry) => entry.work_date))];
+	const streak = computeTimeStreak(workDates);
 
 	const greeting = getDashboardGreeting();
 	const insight = getFunInsight(stats);
@@ -120,6 +125,8 @@ export default async function DashboardPage() {
 					</div>
 				</div>
 			</section>
+
+			<StreakCard streak={streak} />
 
 			<div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
 				{quickStats.map((item) => (

@@ -129,6 +129,30 @@ textarea::placeholder {
 	display: none;
 }
 
+@keyframes confetti-fall {
+	0% {
+		transform: translateY(0) rotate(0deg);
+		opacity: 1;
+	}
+
+	100% {
+		transform: translateY(110vh) rotate(540deg);
+		opacity: 0;
+	}
+}
+
+@keyframes celebration-pop {
+	0% {
+		transform: scale(0.92);
+		opacity: 0;
+	}
+
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
 @media (min-width: 768px) {
 	.app-shell-main {
 		padding-bottom: 2rem;

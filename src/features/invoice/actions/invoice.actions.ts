@@ -17,6 +17,8 @@ import {
 	generateHourlyLines,
 	generateTotalLine,
 } from '@/features/invoice/services/invoice-generator';
+import type { CelebrationId } from '@/features/engagement/types/celebration';
+import { detectInvoicePaidCelebration } from '@/features/engagement/utils/detect-celebration';
 import { formatInvoiceNumber } from '@/lib/invoice-number';
 import type { InvoiceStatus } from '@/lib/supabase/database.types';
 import { createClient } from '@/lib/supabase/server';
@@ -267,11 +269,27 @@ export async function updateInvoiceStatus(
 		return { error: updateError.message };
 	}
 
+	let celebration: CelebrationId | undefined;
+
+	if (nextStatus === 'paid') {
+		const { count } = await supabase
+			.from('invoices')
+			.select('*', { count: 'exact', head: true })
+			.eq('user_id', user.id)
+			.eq('status', 'paid');
+
+		celebration = detectInvoicePaidCelebration(count ?? 0);
+	}
+
 	revalidatePath(ROUTES.projectInvoices(projectId));
 	revalidatePath(ROUTES.projectInvoice(projectId, invoiceId));
 	revalidatePath(ROUTES.project(projectId));
+	revalidatePath(ROUTES.dashboard);
 
-	return { success: 'وضعیت فاکتور به‌روزرسانی شد.' };
+	return {
+		success: nextStatus === 'paid' ? 'پرداخت شد — آفرین!' : 'وضعیت فاکتور به‌روزرسانی شد.',
+		celebration,
+	};
 }
 
 export async function getUserPaymentMethods() {

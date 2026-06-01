@@ -8,12 +8,15 @@ import {
 	deleteTimeEntrySchema,
 	updateTimeEntrySchema,
 } from '@/features/timesheet/schemas/time-entry.schema';
+import { detectTimeEntryCelebration } from '@/features/engagement/utils/detect-celebration';
+import type { CelebrationId } from '@/features/engagement/types/celebration';
 import { requireUser } from '@/lib/auth/require-user';
 import { createClient } from '@/lib/supabase/server';
 
 export interface ITimeEntryActionState {
 	error?: string;
 	success?: string;
+	celebration?: CelebrationId;
 }
 
 async function revalidateProjectPaths(projectId: string) {
@@ -58,8 +61,20 @@ export async function createTimeEntry(input: unknown): Promise<ITimeEntryActionS
 		return { error: error.message };
 	}
 
+	const { data: workDates } = await supabase
+		.from('time_entries')
+		.select('work_date')
+		.eq('user_id', user.id);
+
+	const celebration = detectTimeEntryCelebration((workDates ?? []).map((row) => row.work_date));
+
 	await revalidateProjectPaths(parsed.data.projectId);
-	return { success: 'ساعت کار ثبت شد.' };
+	revalidatePath(ROUTES.dashboard);
+
+	return {
+		success: 'ساعت کار ثبت شد.',
+		celebration,
+	};
 }
 
 export async function updateTimeEntry(input: unknown): Promise<ITimeEntryActionState> {

@@ -1,3 +1,4 @@
+import type { CelebrationId } from '@/features/engagement/types/celebration';
 import type {
 	ExchangeMethod,
 	Invoice,
@@ -35,6 +36,7 @@ export interface IInvoiceActionState {
 	error?: string;
 	success?: string;
 	invoiceId?: string;
+	celebration?: CelebrationId;
 }
 
 export type { InvoiceStatus };
