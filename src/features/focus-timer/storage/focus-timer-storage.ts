@@ -1,3 +1,4 @@
+import { normalizePomodoroMinutes } from '@/features/focus-timer/constants';
 import type { IPersistedFocusTimer } from '@/features/focus-timer/types';
 
 const STORAGE_KEY = 'factorchi-focus-timer';
@@ -25,7 +26,10 @@ export function readPersistedTimer(): IPersistedFocusTimer | null {
 			return null;
 		}
 
-		return parsed;
+		return {
+			...parsed,
+			pomodoroMinutes: normalizePomodoroMinutes(parsed.pomodoroMinutes),
+		};
 	} catch {
 		return null;
 	}

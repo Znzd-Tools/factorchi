@@ -12,7 +12,7 @@ import {
 } from 'react';
 import { toast } from 'sonner';
 
-import { POMODORO_FOCUS_MS } from '@/features/focus-timer/constants';
+import { normalizePomodoroMinutes } from '@/features/focus-timer/constants';
 import {
 	readPersistedTimer,
 	subscribePersistedTimer,
@@ -27,15 +27,19 @@ import {
 	elapsedMsToHours,
 	getCompletedPomodoros,
 	getElapsedMs,
+	getPomodoroProgress,
 } from '@/features/focus-timer/utils/timer-math';
 import { getTodayIso } from '@/lib/jalali/picker';
+import { toFaNumber } from '@/lib/locale/persian-digits';
 import { triggerHaptic } from '@/lib/haptics';
 
 interface IFocusTimerContextValue {
 	timer: IPersistedFocusTimer | null;
 	elapsedMs: number;
+	pomodoroMinutes: number;
 	pomodoroProgress: number;
 	completedPomodoros: number;
+	onPomodoroBreak: boolean;
 	stopDraft: IFocusTimerStopDraft | null;
 	isActive: boolean;
 	start: (project: IFocusTimerProject) => void;
@@ -56,11 +60,26 @@ function hydrateTimer(): IPersistedFocusTimer | null {
 		return null;
 	}
 
+	const pomodoroMinutes = normalizePomodoroMinutes(stored.pomodoroMinutes);
+
 	if (stored.status === 'running' && stored.segmentStartedAt == null) {
-		return { ...stored, status: 'paused' };
+		return { ...stored, pomodoroMinutes, status: 'paused' };
 	}
 
-	return stored;
+	return { ...stored, pomodoroMinutes };
+}
+
+function freezeRunningTimer(current: IPersistedFocusTimer): IPersistedFocusTimer {
+	if (current.status !== 'running' || current.segmentStartedAt == null) {
+		return current;
+	}
+
+	return {
+		...current,
+		status: 'paused',
+		accumulatedMs: current.accumulatedMs + (Date.now() - current.segmentStartedAt),
+		segmentStartedAt: null,
+	};
 }
 
 export function FocusTimerProvider({ children }: { children: ReactNode }) {
@@ -69,6 +88,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 	);
 	const [now, setNow] = useState(() => Date.now());
 	const [stopDraft, setStopDraft] = useState<IFocusTimerStopDraft | null>(null);
+	const [onPomodoroBreak, setOnPomodoroBreak] = useState(false);
 	const lastPomodoroRef = useRef(0);
 
 	const persist = useCallback((next: IPersistedFocusTimer | null) => {
@@ -88,9 +108,23 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 		return () => window.clearInterval(id);
 	}, [timer?.status]);
 
+	const pomodoroMinutes = normalizePomodoroMinutes(timer?.pomodoroMinutes);
 	const elapsedMs = getElapsedMs(timer, now);
-	const completedPomodoros = timer ? getCompletedPomodoros(elapsedMs) : 0;
-	const pomodoroProgress = timer ? (elapsedMs % POMODORO_FOCUS_MS) / POMODORO_FOCUS_MS : 0;
+	const completedPomodoros = timer ? getCompletedPomodoros(elapsedMs, pomodoroMinutes) : 0;
+	const pomodoroProgress = timer ? getPomodoroProgress(elapsedMs, pomodoroMinutes) : 0;
+
+	const pauseForBreak = useCallback(() => {
+		setTimer((current) => {
+			if (!current) {
+				return current;
+			}
+
+			const next = freezeRunningTimer(current);
+			writePersistedTimer(next);
+			return next;
+		});
+		setOnPomodoroBreak(true);
+	}, []);
 
 	useEffect(() => {
 		if (!timer) {
@@ -98,11 +132,19 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 			return;
 		}
 
+		if (timer.status !== 'running') {
+			return;
+		}
+
 		if (completedPomodoros > lastPomodoroRef.current) {
 			lastPomodoroRef.current = completedPomodoros;
 			triggerHaptic('success');
+			toast.success(
+				`پومودورو ${toFaNumber(completedPomodoros)} تمام شد. وقت استراحت — «ادامه» برای راند بعدی.`,
+			);
+			pauseForBreak();
 		}
-	}, [completedPomodoros, timer]);
+	}, [completedPomodoros, timer, pauseForBreak]);
 
 	useEffect(() => {
 		if (timer?.status !== 'running') {
@@ -117,7 +159,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 					wakeLock = await navigator.wakeLock.request('screen');
 				}
 			} catch {
-				// Ignore — optional enhancement
+				// Optional
 			}
 		};
 
@@ -130,16 +172,18 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 
 	const start = useCallback(
 		(project: IFocusTimerProject) => {
+			const minutes = normalizePomodoroMinutes(project.pomodoroMinutes);
 			const next: IPersistedFocusTimer = {
 				projectId: project.id,
 				projectName: project.name,
+				pomodoroMinutes: minutes,
 				status: 'running',
 				accumulatedMs: 0,
 				segmentStartedAt: Date.now(),
-				completedPomodoros: 0,
 			};
 
 			setStopDraft(null);
+			setOnPomodoroBreak(false);
 			lastPomodoroRef.current = 0;
 			persist(next);
 			triggerHaptic('medium');
@@ -148,18 +192,13 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 	);
 
 	const pause = useCallback(() => {
+		setOnPomodoroBreak(false);
 		setTimer((current) => {
-			if (!current || current.status !== 'running' || current.segmentStartedAt == null) {
+			if (!current) {
 				return current;
 			}
 
-			const next: IPersistedFocusTimer = {
-				...current,
-				status: 'paused',
-				accumulatedMs: current.accumulatedMs + (Date.now() - current.segmentStartedAt),
-				segmentStartedAt: null,
-			};
-
+			const next = freezeRunningTimer(current);
 			writePersistedTimer(next);
 			triggerHaptic('light');
 			return next;
@@ -167,6 +206,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const resume = useCallback(() => {
+		setOnPomodoroBreak(false);
 		setTimer((current) => {
 			if (!current || current.status !== 'paused') {
 				return current;
@@ -185,12 +225,16 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const requestStop = useCallback(() => {
+		setOnPomodoroBreak(false);
 		setTimer((current) => {
 			if (!current) {
 				return current;
 			}
 
-			const frozenMs = getElapsedMs(current, Date.now());
+			const frozenMs = getElapsedMs(
+				current.status === 'running' ? freezeRunningTimer(current) : current,
+				Date.now(),
+			);
 			const hours = elapsedMsToHours(frozenMs);
 
 			if (hours <= 0) {
@@ -227,6 +271,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 
 	const discardSession = useCallback(() => {
 		setStopDraft(null);
+		setOnPomodoroBreak(false);
 		persist(null);
 		triggerHaptic('light');
 	}, [persist]);
@@ -239,8 +284,10 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 		() => ({
 			timer,
 			elapsedMs,
+			pomodoroMinutes,
 			pomodoroProgress,
 			completedPomodoros,
+			onPomodoroBreak,
 			stopDraft,
 			isActive: timer != null,
 			start,
@@ -254,8 +301,10 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 		[
 			timer,
 			elapsedMs,
+			pomodoroMinutes,
 			pomodoroProgress,
 			completedPomodoros,
+			onPomodoroBreak,
 			stopDraft,
 			start,
 			pause,

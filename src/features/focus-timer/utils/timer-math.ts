@@ -1,4 +1,4 @@
-import { POMODORO_FOCUS_MS } from '@/features/focus-timer/constants';
+import { normalizePomodoroMinutes, pomodoroMinutesToMs } from '@/features/focus-timer/constants';
 import type { IPersistedFocusTimer } from '@/features/focus-timer/types';
 
 export function getElapsedMs(timer: IPersistedFocusTimer | null, now = Date.now()): number {
@@ -13,14 +13,26 @@ export function getElapsedMs(timer: IPersistedFocusTimer | null, now = Date.now(
 	return timer.accumulatedMs;
 }
 
-export function getPomodoroProgress(elapsedMs: number): number {
-	const inBlock = elapsedMs % POMODORO_FOCUS_MS;
-
-	return Math.min(1, inBlock / POMODORO_FOCUS_MS);
+export function getPomodoroBlockMs(timer: IPersistedFocusTimer | null): number {
+	return pomodoroMinutesToMs(normalizePomodoroMinutes(timer?.pomodoroMinutes));
 }
 
-export function getCompletedPomodoros(elapsedMs: number): number {
-	return Math.floor(elapsedMs / POMODORO_FOCUS_MS);
+export function getPomodoroProgress(elapsedMs: number, pomodoroMinutes: number): number {
+	const blockMs = pomodoroMinutesToMs(normalizePomodoroMinutes(pomodoroMinutes));
+	const inBlock = elapsedMs % blockMs;
+
+	return Math.min(1, inBlock / blockMs);
+}
+
+export function getCompletedPomodoros(elapsedMs: number, pomodoroMinutes: number): number {
+	const blockMs = pomodoroMinutesToMs(normalizePomodoroMinutes(pomodoroMinutes));
+
+	return Math.floor(elapsedMs / blockMs);
+}
+
+/** 1-based index of the current focus block (wraps after each full pomodoro). */
+export function getCurrentPomodoroIndex(elapsedMs: number, pomodoroMinutes: number): number {
+	return getCompletedPomodoros(elapsedMs, pomodoroMinutes) + 1;
 }
 
 export function elapsedMsToHours(elapsedMs: number): number {

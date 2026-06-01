@@ -86,6 +86,7 @@ export interface Database {
 					total_amount: number | null;
 					status: ProjectStatus;
 					notes: string | null;
+					pomodoro_minutes: number;
 					created_at: string;
 					updated_at: string;
 				};
@@ -101,6 +102,7 @@ export interface Database {
 					total_amount?: number | null;
 					status?: ProjectStatus;
 					notes?: string | null;
+					pomodoro_minutes?: number;
 					created_at?: string;
 					updated_at?: string;
 				};
@@ -116,6 +118,7 @@ export interface Database {
 					total_amount?: number | null;
 					status?: ProjectStatus;
 					notes?: string | null;
+					pomodoro_minutes?: number;
 					created_at?: string;
 					updated_at?: string;
 				};

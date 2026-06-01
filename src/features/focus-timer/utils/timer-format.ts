@@ -1,6 +1,5 @@
+import { normalizePomodoroMinutes, pomodoroMinutesToMs } from '@/features/focus-timer/constants';
 import { toPersianDigits } from '@/lib/locale/persian-digits';
-
-import { POMODORO_FOCUS_MINUTES } from '@/features/focus-timer/constants';
 
 export function formatElapsedClock(elapsedMs: number): string {
 	const totalSeconds = Math.floor(elapsedMs / 1000);
@@ -17,9 +16,11 @@ export function formatElapsedClock(elapsedMs: number): string {
 	return toPersianDigits(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
 }
 
-export function formatPomodoroBlockRemaining(elapsedMs: number): string {
-	const totalSeconds = Math.floor((elapsedMs % (POMODORO_FOCUS_MINUTES * 60_000)) / 1000);
-	const remainingSeconds = POMODORO_FOCUS_MINUTES * 60 - totalSeconds;
+export function formatPomodoroBlockRemaining(elapsedMs: number, pomodoroMinutes: number): string {
+	const blockMs = pomodoroMinutesToMs(normalizePomodoroMinutes(pomodoroMinutes));
+	const totalSeconds = Math.floor((elapsedMs % blockMs) / 1000);
+	const blockSeconds = Math.floor(blockMs / 1000);
+	const remainingSeconds = Math.max(0, blockSeconds - totalSeconds);
 	const minutes = Math.floor(remainingSeconds / 60);
 	const seconds = remainingSeconds % 60;
 

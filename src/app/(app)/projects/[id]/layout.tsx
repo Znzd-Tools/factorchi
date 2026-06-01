@@ -9,6 +9,7 @@ import { FocusTimerPanel } from '@/features/focus-timer/components/FocusTimerPan
 import { ProjectHealthBadge } from '@/features/projects/components/ProjectHealthBadge';
 import { ProjectTabs } from '@/features/projects/components/ProjectTabs';
 import { buildProjectHealthMap } from '@/features/projects/utils/project-health';
+import { normalizePomodoroMinutes } from '@/features/focus-timer/constants';
 import { getCurrentJalaliMonth, getJalaliMonthRange } from '@/lib/jalali';
 import { requireUser } from '@/lib/auth/require-user';
 import { createClient } from '@/lib/supabase/server';
@@ -72,7 +73,11 @@ export default async function ProjectLayout({ children, params }: IProjectLayout
 
 			{project.type === 'hourly' && project.hourly_rate != null && (
 				<div className='no-print'>
-					<FocusTimerPanel projectId={project.id} projectName={project.name} />
+					<FocusTimerPanel
+						projectId={project.id}
+						projectName={project.name}
+						pomodoroMinutes={normalizePomodoroMinutes(project.pomodoro_minutes)}
+					/>
 				</div>
 			)}
 

@@ -54,7 +54,7 @@ export default async function DashboardPage() {
 			.eq('user_id', user.id),
 		supabase
 			.from('projects')
-			.select('id, name')
+			.select('id, name, pomodoro_minutes')
 			.eq('user_id', user.id)
 			.eq('status', 'active')
 			.eq('type', 'hourly')
@@ -170,6 +170,7 @@ export default async function DashboardPage() {
 				projects={(hourlyProjects ?? []).map((project) => ({
 					id: project.id,
 					name: project.name,
+					pomodoroMinutes: project.pomodoro_minutes ?? 25,
 				}))}
 			/>
 

@@ -1,48 +1,62 @@
 'use client';
 
+import Link from 'next/link';
 import { Pause, Play, Square, Timer } from 'lucide-react';
 
 import { Button } from '@/components/atoms/Button';
-import { POMODORO_FOCUS_MINUTES } from '@/features/focus-timer/constants';
+import { ROUTES } from '@/config/routes';
 import { useFocusTimer } from '@/features/focus-timer/context/FocusTimerContext';
 import { FocusTimerRing } from '@/features/focus-timer/components/FocusTimerRing';
 import {
 	formatElapsedClock,
 	formatPomodoroBlockRemaining,
 } from '@/features/focus-timer/utils/timer-format';
+import { getCurrentPomodoroIndex } from '@/features/focus-timer/utils/timer-math';
 import { toFaNumber } from '@/lib/locale/persian-digits';
 import { cn } from '@/lib/utils/cn';
 
 interface IFocusTimerPanelProps {
 	projectId: string;
 	projectName: string;
+	pomodoroMinutes: number;
 	compact?: boolean;
 }
 
-export function FocusTimerPanel({ projectId, projectName, compact = false }: IFocusTimerPanelProps) {
+export function FocusTimerPanel({
+	projectId,
+	projectName,
+	pomodoroMinutes,
+	compact = false,
+}: IFocusTimerPanelProps) {
 	const {
 		timer,
 		elapsedMs,
+		pomodoroMinutes: activePomodoroMinutes,
 		pomodoroProgress,
 		completedPomodoros,
+		onPomodoroBreak,
 		start,
 		pause,
 		resume,
 		requestStop,
 	} = useFocusTimer();
 
+	const displayMinutes = timer?.projectId === projectId ? activePomodoroMinutes : pomodoroMinutes;
 	const isThisProject = timer?.projectId === projectId;
 	const isRunning = isThisProject && timer.status === 'running';
 	const isPaused = isThisProject && timer.status === 'paused';
 	const isIdle = !isThisProject;
 	const otherProjectActive = timer != null && !isThisProject;
+	const currentBlock = isThisProject
+		? getCurrentPomodoroIndex(elapsedMs, displayMinutes)
+		: 1;
 
 	const handleStart = () => {
 		if (otherProjectActive) {
 			return;
 		}
 
-		start({ id: projectId, name: projectName });
+		start({ id: projectId, name: projectName, pomodoroMinutes });
 	};
 
 	if (isIdle && !compact) {
@@ -60,8 +74,14 @@ export function FocusTimerPanel({ projectId, projectName, compact = false }: IFo
 					<div className='min-w-0 flex-1'>
 						<h2 className='text-lg font-black text-foreground'>تایمر تمرکز</h2>
 						<p className='mt-1 text-sm text-muted-foreground'>
-							پومودورو {toFaNumber(POMODORO_FOCUS_MINUTES)} دقیقه‌ای · شروع، توقف، ثبت در تایم‌شیت
+							هر پومودورو {toFaNumber(displayMinutes)} دقیقه · بعد از هر راند استراحت و «ادامه»
 						</p>
+						<Link
+							href={ROUTES.projectSettings(projectId)}
+							className='mt-2 inline-block text-xs font-bold text-primary'
+						>
+							تغییر مدت پومودورو در تنظیمات
+						</Link>
 						{otherProjectActive && (
 							<p className='mt-2 text-xs font-bold text-amber-600 dark:text-amber-400'>
 								تایمر برای «{timer.projectName}» فعال است
@@ -108,28 +128,44 @@ export function FocusTimerPanel({ projectId, projectName, compact = false }: IFo
 			className={cn(
 				'rounded-3xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-indigo-500/10 p-5 shadow-[var(--shadow-soft)]',
 				isRunning && 'ring-2 ring-primary/20',
+				onPomodoroBreak && 'border-accent/40',
 				compact && 'p-4',
 			)}
 		>
+			{onPomodoroBreak && (
+				<div className='mb-3 rounded-xl bg-accent/15 px-3 py-2.5 text-center text-sm font-bold text-accent'>
+					پومودورو تمام شد — استراحت کن، بعد «ادامه» برای راند{' '}
+					{toFaNumber(completedPomodoros + 1)}
+				</div>
+			)}
+
 			<div className='mb-3 flex items-center justify-between gap-2'>
 				<div>
-					<p className='text-xs font-bold text-primary'>در حال تمرکز</p>
+					<p className='text-xs font-bold text-primary'>
+						{isRunning ? 'در حال تمرکز' : 'مکث'}
+					</p>
+					<p className='text-xs text-muted-foreground'>
+						پومودورو {toFaNumber(currentBlock)} · {toFaNumber(displayMinutes)} دقیقه
+					</p>
 					{completedPomodoros > 0 && (
 						<p className='text-xs text-muted-foreground'>
-							{toFaNumber(completedPomodoros)} پومودورو تمام شد
+							{toFaNumber(completedPomodoros)} راند تمام‌شده
 						</p>
 					)}
 				</div>
-				<p className='text-xs text-muted-foreground'>
-					باقی‌مانده: <span dir='ltr'>{formatPomodoroBlockRemaining(elapsedMs)}</span>
-				</p>
+				{isRunning && (
+					<p className='text-xs text-muted-foreground'>
+						باقی‌مانده:{' '}
+						<span dir='ltr'>{formatPomodoroBlockRemaining(elapsedMs, displayMinutes)}</span>
+					</p>
+				)}
 			</div>
 
 			<FocusTimerRing progress={pomodoroProgress} isRunning={isRunning}>
 				<p className='text-4xl font-black tabular-nums text-foreground' dir='ltr'>
 					{formatElapsedClock(elapsedMs)}
 				</p>
-				<p className='mt-1 text-xs text-muted-foreground'>پومودورو {toFaNumber(POMODORO_FOCUS_MINUTES)} دقیقه</p>
+				<p className='mt-1 text-xs text-muted-foreground'>کل جلسه</p>
 			</FocusTimerRing>
 
 			<div className='mt-5 flex gap-2'>
@@ -141,7 +177,7 @@ export function FocusTimerPanel({ projectId, projectName, compact = false }: IFo
 				) : (
 					<Button type='button' className='flex-1' haptic='selection' onClick={resume}>
 						<Play size={18} aria-hidden />
-						ادامه
+						{onPomodoroBreak ? 'ادامه (راند بعد)' : 'ادامه'}
 					</Button>
 				)}
 				<Button
@@ -156,8 +192,10 @@ export function FocusTimerPanel({ projectId, projectName, compact = false }: IFo
 				</Button>
 			</div>
 
-			{isPaused && (
-				<p className='mt-3 text-center text-xs text-muted-foreground'>مکث · برای ثبت، پایان را بزن</p>
+			{isPaused && !onPomodoroBreak && (
+				<p className='mt-3 text-center text-xs text-muted-foreground'>
+					مکث دستی · «پایان» برای ثبت در تایم‌شیت
+				</p>
 			)}
 		</section>
 	);
