@@ -5,6 +5,7 @@ import { HapticLink } from '@/components/ui/HapticLink';
 import { ListGroup } from '@/components/ui/ListRow';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { ROUTES } from '@/config/routes';
+import { FeedbackSettingsCard } from '@/features/profile/components/FeedbackSettingsCard';
 import { ProfileForm } from '@/features/profile/components/ProfileForm';
 import { requireUser } from '@/lib/auth/require-user';
 import { createClient } from '@/lib/supabase/server';
@@ -30,6 +31,8 @@ export default async function ProfilePage() {
 					defaultCurrency={profile?.default_currency ?? 'toman'}
 				/>
 			</Card>
+
+			<FeedbackSettingsCard />
 
 			<section className='space-y-3'>
 				<h2 className='text-sm font-bold text-muted-foreground'>تنظیمات</h2>

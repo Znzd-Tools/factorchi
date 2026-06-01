@@ -5,7 +5,10 @@ import { FilePlus2 } from 'lucide-react';
 
 import { Button } from '@/components/atoms/Button';
 import { ROUTES } from '@/config/routes';
+import { ProjectHealthBadge } from '@/features/projects/components/ProjectHealthBadge';
 import { ProjectTabs } from '@/features/projects/components/ProjectTabs';
+import { buildProjectHealthMap } from '@/features/projects/utils/project-health';
+import { getCurrentJalaliMonth, getJalaliMonthRange } from '@/lib/jalali';
 import { requireUser } from '@/lib/auth/require-user';
 import { createClient } from '@/lib/supabase/server';
 
@@ -33,11 +36,37 @@ export default async function ProjectLayout({ children, params }: IProjectLayout
 		notFound();
 	}
 
+	const { year, month } = getCurrentJalaliMonth();
+	const monthRange = getJalaliMonthRange(year, month);
+
+	const [{ data: invoices }, { data: timeEntries }] = await Promise.all([
+		supabase.from('invoices').select('project_id, status, total').eq('project_id', project.id),
+		supabase
+			.from('time_entries')
+			.select('project_id, hours, rate_at_entry, work_date')
+			.eq('project_id', project.id),
+	]);
+
+	const healthMap = buildProjectHealthMap(
+		[project],
+		invoices ?? [],
+		timeEntries ?? [],
+		monthRange.startIso,
+		monthRange.endIso,
+	);
+	const health = healthMap.get(project.id);
+
 	return (
 		<div className='space-y-5 pb-24 md:pb-6'>
-			<div className='no-print space-y-1'>
-				<h1 className='text-xl font-black text-foreground sm:text-2xl'>{project.name}</h1>
-				<p className='text-sm text-muted-foreground'>{project.client_name}</p>
+			<div className='no-print space-y-2'>
+				{health && <ProjectHealthBadge health={health} />}
+				<div>
+					<h1 className='text-xl font-black text-foreground sm:text-2xl'>{project.name}</h1>
+					<p className='mt-1 text-sm text-muted-foreground'>{project.client_name}</p>
+					{health && (
+						<p className='mt-1 text-xs text-muted-foreground'>{health.hint}</p>
+					)}
+				</div>
 			</div>
 
 			<Suspense fallback={<div className='no-print h-12 animate-pulse rounded-2xl bg-muted' />}>

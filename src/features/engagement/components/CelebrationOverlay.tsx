@@ -49,7 +49,7 @@ export function CelebrationOverlay() {
 		}
 
 		const config = CELEBRATIONS[activeId];
-		triggerHaptic(config.intensity === 'burst' ? 'success' : 'medium');
+		triggerHaptic(config.intensity === 'burst' ? 'celebration' : 'medium');
 
 		const timer = window.setTimeout(dismiss, config.intensity === 'burst' ? 2800 : 1600);
 

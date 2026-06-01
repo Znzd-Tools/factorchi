@@ -1,14 +1,17 @@
 import { ChevronLeft, FolderKanban } from 'lucide-react';
 
 import { HapticLink } from '@/components/ui/HapticLink';
+import { ProjectHealthBadge } from '@/features/projects/components/ProjectHealthBadge';
 import { ROUTES } from '@/config/routes';
 import { getCurrencyLabel } from '@/features/invoice/constants/currencies';
+import type { IProjectHealth } from '@/features/projects/utils/project-health';
 import { formatMoney } from '@/lib/money';
 import type { Project } from '@/lib/supabase/database.types';
 import { cn } from '@/lib/utils/cn';
 
 interface IProjectCardProps {
 	project: Project;
+	health: IProjectHealth;
 }
 
 const TYPE_LABELS: Record<Project['type'], string> = {
@@ -16,7 +19,7 @@ const TYPE_LABELS: Record<Project['type'], string> = {
 	total: 'مبلغ ثابت',
 };
 
-export function ProjectCard({ project }: IProjectCardProps) {
+export function ProjectCard({ project, health }: IProjectCardProps) {
 	const currencyLabel = getCurrencyLabel(project.currency);
 	const amountLabel =
 		project.type === 'hourly'
@@ -29,8 +32,15 @@ export function ProjectCard({ project }: IProjectCardProps) {
 			haptic='light'
 			className={cn(
 				'block rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]',
+				health.level === 'critical' && 'border-red-400/40',
+				health.level === 'warning' && 'border-amber-400/30',
 			)}
 		>
+			<div className='mb-3 flex items-center justify-between gap-2'>
+				<ProjectHealthBadge health={health} />
+				<p className='line-clamp-1 text-[10px] text-muted-foreground'>{health.hint}</p>
+			</div>
+
 			<div className='flex items-start gap-3'>
 				<div className='flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary'>
 					<FolderKanban size={20} aria-hidden />
