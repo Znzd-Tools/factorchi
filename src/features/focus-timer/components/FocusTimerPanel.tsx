@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Pause, Play, Square, Timer } from 'lucide-react';
+import { Pause, Play, Square, Timer, X } from 'lucide-react';
 
 import { Button } from '@/components/atoms/Button';
 import { ROUTES } from '@/config/routes';
@@ -39,6 +39,7 @@ export function FocusTimerPanel({
 		pause,
 		resume,
 		requestStop,
+		cancelSession,
 	} = useFocusTimer();
 
 	const displayMinutes = timer?.projectId === projectId ? activePomodoroMinutes : pomodoroMinutes;
@@ -168,33 +169,45 @@ export function FocusTimerPanel({
 				<p className='mt-1 text-xs text-muted-foreground'>کل جلسه</p>
 			</FocusTimerRing>
 
-			<div className='mt-5 flex gap-2'>
-				{isRunning ? (
-					<Button type='button' variant='secondary' className='flex-1' haptic='light' onClick={pause}>
-						<Pause size={18} aria-hidden />
-						مکث
+			<div className='mt-5 flex flex-col gap-2'>
+				<div className='flex gap-2'>
+					{isRunning ? (
+						<Button type='button' variant='secondary' className='flex-1' haptic='light' onClick={pause}>
+							<Pause size={18} aria-hidden />
+							مکث
+						</Button>
+					) : (
+						<Button type='button' className='flex-1' haptic='selection' onClick={resume}>
+							<Play size={18} aria-hidden />
+							{onPomodoroBreak ? 'ادامه (راند بعد)' : 'ادامه'}
+						</Button>
+					)}
+					<Button
+						type='button'
+						variant='danger'
+						className='flex-1'
+						haptic='warning'
+						onClick={requestStop}
+					>
+						<Square size={18} aria-hidden />
+						پایان و ثبت
 					</Button>
-				) : (
-					<Button type='button' className='flex-1' haptic='selection' onClick={resume}>
-						<Play size={18} aria-hidden />
-						{onPomodoroBreak ? 'ادامه (راند بعد)' : 'ادامه'}
-					</Button>
-				)}
+				</div>
 				<Button
 					type='button'
-					variant='danger'
-					className='flex-1'
-					haptic='warning'
-					onClick={requestStop}
+					variant='ghost'
+					className='w-full text-muted-foreground'
+					haptic='light'
+					onClick={cancelSession}
 				>
-					<Square size={18} aria-hidden />
-					پایان
+					<X size={18} aria-hidden />
+					لغو جلسه
 				</Button>
 			</div>
 
 			{isPaused && !onPomodoroBreak && (
 				<p className='mt-3 text-center text-xs text-muted-foreground'>
-					مکث دستی · «پایان» برای ثبت در تایم‌شیت
+					مکث دستی · «پایان و ثبت» برای تایم‌شیت (حداقل یک دقیقه) · «لغو جلسه» بدون ثبت
 				</p>
 			)}
 		</section>

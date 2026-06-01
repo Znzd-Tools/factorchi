@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Pause, Play, Square } from 'lucide-react';
+import { Pause, Play, Square, X } from 'lucide-react';
 
 import { Button } from '@/components/atoms/Button';
 import { ROUTES } from '@/config/routes';
@@ -12,7 +12,8 @@ import { cn } from '@/lib/utils/cn';
 
 export function FocusTimerFloatingBar() {
 	const pathname = usePathname();
-	const { timer, elapsedMs, isActive, pause, resume, requestStop } = useFocusTimer();
+	const { timer, elapsedMs, isActive, pause, resume, requestStop, cancelSession } =
+		useFocusTimer();
 
 	if (!isActive || !timer) {
 		return null;
@@ -60,8 +61,25 @@ export function FocusTimerFloatingBar() {
 							<Play size={16} />
 						</Button>
 					)}
-					<Button type='button' variant='danger' size='sm' haptic='warning' onClick={requestStop} aria-label='پایان'>
+					<Button
+						type='button'
+						variant='danger'
+						size='sm'
+						haptic='warning'
+						onClick={requestStop}
+						aria-label='پایان و ثبت'
+					>
 						<Square size={16} />
+					</Button>
+					<Button
+						type='button'
+						variant='ghost'
+						size='sm'
+						haptic='light'
+						onClick={cancelSession}
+						aria-label='لغو جلسه'
+					>
+						<X size={16} />
 					</Button>
 				</div>
 			</div>

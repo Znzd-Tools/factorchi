@@ -46,6 +46,7 @@ interface IFocusTimerContextValue {
 	pause: () => void;
 	resume: () => void;
 	requestStop: () => void;
+	cancelSession: () => void;
 	dismissStop: () => void;
 	discardSession: () => void;
 	updateStopHours: (hours: number) => void;
@@ -90,6 +91,11 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 	const [stopDraft, setStopDraft] = useState<IFocusTimerStopDraft | null>(null);
 	const [onPomodoroBreak, setOnPomodoroBreak] = useState(false);
 	const lastPomodoroRef = useRef(0);
+	const timerRef = useRef<IPersistedFocusTimer | null>(timer);
+
+	useEffect(() => {
+		timerRef.current = timer;
+	}, [timer]);
 
 	const persist = useCallback((next: IPersistedFocusTimer | null) => {
 		setTimer(next);
@@ -224,57 +230,60 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 		});
 	}, []);
 
-	const requestStop = useCallback(() => {
-		setOnPomodoroBreak(false);
-		setTimer((current) => {
-			if (!current) {
-				return current;
-			}
-
-			const frozenMs = getElapsedMs(
-				current.status === 'running' ? freezeRunningTimer(current) : current,
-				Date.now(),
-			);
-			const hours = elapsedMsToHours(frozenMs);
-
-			if (hours <= 0) {
-				toast.error('حداقل یک دقیقه برای پایان جلسه لازم است.');
-				triggerHaptic('warning');
-				return current;
-			}
-
-			const paused: IPersistedFocusTimer = {
-				...current,
-				status: 'paused',
-				accumulatedMs: frozenMs,
-				segmentStartedAt: null,
-			};
-
-			writePersistedTimer(paused);
-
-			setStopDraft({
-				projectId: current.projectId,
-				projectName: current.projectName,
-				elapsedMs: frozenMs,
-				workDate: getTodayIso(),
-				hours,
-			});
-
-			triggerHaptic('light');
-			return paused;
-		});
-	}, []);
-
-	const dismissStop = useCallback(() => {
-		setStopDraft(null);
-	}, []);
-
 	const discardSession = useCallback(() => {
 		setStopDraft(null);
 		setOnPomodoroBreak(false);
 		persist(null);
 		triggerHaptic('light');
 	}, [persist]);
+
+	const cancelSession = useCallback(() => {
+		discardSession();
+		toast.success('جلسه لغو شد.');
+	}, [discardSession]);
+
+	const requestStop = useCallback(() => {
+		const current = timerRef.current;
+
+		if (!current) {
+			return;
+		}
+
+		setOnPomodoroBreak(false);
+
+		const snapshot =
+			current.status === 'running' ? freezeRunningTimer(current) : current;
+		const frozenMs = getElapsedMs(snapshot, Date.now());
+		const hours = elapsedMsToHours(frozenMs);
+
+		if (hours <= 0) {
+			cancelSession();
+			return;
+		}
+
+		const paused: IPersistedFocusTimer = {
+			...snapshot,
+			status: 'paused',
+			accumulatedMs: frozenMs,
+			segmentStartedAt: null,
+		};
+
+		persist(paused);
+
+		setStopDraft({
+			projectId: current.projectId,
+			projectName: current.projectName,
+			elapsedMs: frozenMs,
+			workDate: getTodayIso(),
+			hours,
+		});
+
+		triggerHaptic('light');
+	}, [cancelSession, persist]);
+
+	const dismissStop = useCallback(() => {
+		setStopDraft(null);
+	}, []);
 
 	const updateStopHours = useCallback((hours: number) => {
 		setStopDraft((draft) => (draft ? { ...draft, hours } : draft));
@@ -294,6 +303,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 			pause,
 			resume,
 			requestStop,
+			cancelSession,
 			dismissStop,
 			discardSession,
 			updateStopHours,
@@ -310,6 +320,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 			pause,
 			resume,
 			requestStop,
+			cancelSession,
 			dismissStop,
 			discardSession,
 			updateStopHours,
