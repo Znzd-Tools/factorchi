@@ -8,12 +8,14 @@ import { ROUTES } from '@/config/routes';
 import { listOpenProjectTodos } from '@/features/todos/queries/project-todo.queries';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
+import { TimesheetCsvPanel } from '@/features/timesheet/components/TimesheetCsvPanel';
 import { TimesheetEntriesTable } from '@/features/timesheet/components/TimesheetEntriesTable';
 import { aggregateMonthly } from '@/features/timesheet/utils/aggregate';
 import { resolveJalaliMonthParams } from '@/features/timesheet/utils/month-params';
 import { getCurrencyLabel } from '@/features/invoice/constants/currencies';
 import { requireUser } from '@/lib/auth/require-user';
 import { formatHoursAsDurationFa } from '@/lib/duration';
+import { getJalaliMonthRange } from '@/lib/jalali';
 import { formatMoney } from '@/lib/money';
 import { createClient } from '@/lib/supabase/server';
 
@@ -62,12 +64,19 @@ export default async function TimesheetPage({ params, searchParams }: ITimesheet
 	]);
 	const totals = aggregateMonthly(entries);
 	const currencyLabel = getCurrencyLabel(project.currency);
+	const monthRange = getJalaliMonthRange(sp.year, sp.month);
 
 	return (
 		<div className='space-y-5'>
 			<Suspense fallback={<MonthPickerFallback />}>
 				<MonthPicker />
 			</Suspense>
+
+			<TimesheetCsvPanel
+				projectId={id}
+				defaultStartDate={monthRange.startIso}
+				defaultEndDate={monthRange.endIso}
+			/>
 
 			<div key={`${sp.year}-${sp.month}`} className='grid grid-cols-2 gap-3'>
 				<Card title='مجموع ساعات' className='p-4'>

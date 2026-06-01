@@ -42,3 +42,40 @@ export async function getMonthlyEntries(
 
 	return data ?? [];
 }
+
+export async function getEntriesInDateRange(
+	projectId: string,
+	startDate: string,
+	endDate: string,
+): Promise<TimeEntry[]> {
+	noStore();
+
+	const user = await requireUser();
+	const supabase = await createClient();
+
+	const { data: project } = await supabase
+		.from('projects')
+		.select('id')
+		.eq('id', projectId)
+		.eq('user_id', user.id)
+		.single();
+
+	if (!project) {
+		return [];
+	}
+
+	const { data, error } = await supabase
+		.from('time_entries')
+		.select('*')
+		.eq('project_id', projectId)
+		.eq('user_id', user.id)
+		.gte('work_date', startDate)
+		.lte('work_date', endDate)
+		.order('work_date', { ascending: true });
+
+	if (error) {
+		return [];
+	}
+
+	return data ?? [];
+}
