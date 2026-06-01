@@ -20,6 +20,7 @@ import {
 	getFunInsight,
 } from '@/features/dashboard/utils/stats';
 import { StreakCard } from '@/features/engagement/components/StreakCard';
+import { MonthlyGoalsCard } from '@/features/goals/components/MonthlyGoalsCard';
 import { WrappedTeaser } from '@/features/engagement/components/WrappedTeaser';
 import { computeMonthlyWrapped } from '@/features/engagement/utils/monthly-wrapped';
 import { computeTimeStreak } from '@/features/engagement/utils/time-streak';
@@ -72,7 +73,11 @@ export default async function DashboardPage() {
 
 	const greeting = getDashboardGreeting();
 	const insight = getFunInsight(stats);
-	const profile = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+	const profile = await supabase
+		.from('profiles')
+		.select('full_name, monthly_hours_goal, monthly_paid_goal')
+		.eq('id', user.id)
+		.single();
 	const displayName = profile.data?.full_name?.trim() || 'فریلنسر';
 
 	const quickStats = [
@@ -150,6 +155,18 @@ export default async function DashboardPage() {
 					paidTotal: monthlyWrapped.paidTotal,
 					hasActivity: monthlyWrapped.hasActivity,
 				}}
+			/>
+
+			<MonthlyGoalsCard
+				monthLabel={formatJalaliMonthLabel(monthRange.start)}
+				hoursGoal={profile.data?.monthly_hours_goal ?? null}
+				paidGoal={
+					profile.data?.monthly_paid_goal != null
+						? Number(profile.data.monthly_paid_goal)
+						: null
+				}
+				currentHours={stats.monthlyHours}
+				currentPaid={monthlyWrapped.paidTotal}
 			/>
 
 			<div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>

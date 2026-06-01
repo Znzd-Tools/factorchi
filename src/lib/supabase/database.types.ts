@@ -15,6 +15,8 @@ export interface Database {
 					id: string;
 					full_name: string | null;
 					default_currency: string;
+					monthly_hours_goal: number | null;
+					monthly_paid_goal: number | null;
 					created_at: string;
 					updated_at: string;
 				};
@@ -22,6 +24,8 @@ export interface Database {
 					id: string;
 					full_name?: string | null;
 					default_currency?: string;
+					monthly_hours_goal?: number | null;
+					monthly_paid_goal?: number | null;
 					created_at?: string;
 					updated_at?: string;
 				};
@@ -29,6 +33,8 @@ export interface Database {
 					id?: string;
 					full_name?: string | null;
 					default_currency?: string;
+					monthly_hours_goal?: number | null;
+					monthly_paid_goal?: number | null;
 					created_at?: string;
 					updated_at?: string;
 				};
