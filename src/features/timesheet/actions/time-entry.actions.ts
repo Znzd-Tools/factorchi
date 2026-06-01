@@ -70,6 +70,7 @@ export async function createTimeEntry(input: unknown): Promise<ITimeEntryActionS
 
 	await revalidateProjectPaths(parsed.data.projectId);
 	revalidatePath(ROUTES.dashboard);
+	revalidatePath(ROUTES.quickLog);
 
 	return {
 		success: 'ساعت کار ثبت شد.',

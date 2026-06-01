@@ -1,6 +1,7 @@
 export const ROUTES = {
 	home: '/',
 	dashboard: '/dashboard',
+	quickLog: '/log',
 	monthlyWrapped: '/dashboard/wrapped',
 	login: '/login',
 	register: '/register',

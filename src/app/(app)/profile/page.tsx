@@ -1,4 +1,4 @@
-import { CreditCard, User } from 'lucide-react';
+import { CreditCard, Timer, User } from 'lucide-react';
 
 import { Card } from '@/components/atoms/Card';
 import { HapticLink } from '@/components/ui/HapticLink';
@@ -37,6 +37,19 @@ export default async function ProfilePage() {
 			<section className='space-y-3'>
 				<h2 className='text-sm font-bold text-muted-foreground'>تنظیمات</h2>
 				<ListGroup>
+					<HapticLink
+						href={ROUTES.quickLog}
+						haptic='medium'
+						className='flex items-center gap-3 px-4 py-4 transition-colors active:bg-muted'
+					>
+						<div className='flex size-10 items-center justify-center rounded-xl bg-accent/15 text-accent'>
+							<Timer size={18} aria-hidden />
+						</div>
+						<div className='min-w-0 flex-1'>
+							<p className='font-bold text-foreground'>ثبت سریع ساعت</p>
+							<p className='text-sm text-muted-foreground'>ویجت PWA و میان‌بر نصب</p>
+						</div>
+					</HapticLink>
 					<HapticLink
 						href={ROUTES.paymentMethods}
 						haptic='light'

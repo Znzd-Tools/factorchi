@@ -5,10 +5,11 @@ import type { ReactNode } from 'react';
 
 import { AppHeader } from '@/components/layout/AppHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { ROUTES } from '@/config/routes';
 import { cn } from '@/lib/utils/cn';
 
 function shouldHideBottomNav(pathname: string): boolean {
-	return /^\/projects\/[^/]+/.test(pathname);
+	return pathname === ROUTES.quickLog || /^\/projects\/[^/]+/.test(pathname);
 }
 
 interface IAppShellProps {

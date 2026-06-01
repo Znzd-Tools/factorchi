@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils/cn';
 
 const ROUTE_TITLES: Record<string, string> = {
 	[ROUTES.dashboard]: 'داشبورد',
+	[ROUTES.quickLog]: 'ثبت سریع',
 	[ROUTES.monthlyWrapped]: 'خلاصه ماه',
 	[ROUTES.projects]: 'پروژه‌ها',
 	[ROUTES.projectNew]: 'پروژه جدید',

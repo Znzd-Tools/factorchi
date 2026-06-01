@@ -5,6 +5,7 @@ import {
 	FolderKanban,
 	PartyPopper,
 	Sparkles,
+	Timer,
 	TrendingUp,
 	Wallet,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ import {
 } from '@/features/dashboard/utils/stats';
 import { StreakCard } from '@/features/engagement/components/StreakCard';
 import { MonthlyGoalsCard } from '@/features/goals/components/MonthlyGoalsCard';
+import { QuickLogTeaser } from '@/features/timesheet/components/QuickLogTeaser';
 import { WrappedTeaser } from '@/features/engagement/components/WrappedTeaser';
 import { computeMonthlyWrapped } from '@/features/engagement/utils/monthly-wrapped';
 import { computeTimeStreak } from '@/features/engagement/utils/time-streak';
@@ -123,6 +125,12 @@ export default async function DashboardPage() {
 						{insight}
 					</p>
 					<div className='mt-5 flex flex-wrap gap-2'>
+						<Link href={ROUTES.quickLog}>
+							<Button className='bg-accent text-accent-foreground hover:opacity-95' haptic='success'>
+								<Timer size={16} />
+								ثبت سریع
+							</Button>
+						</Link>
 						<Link href={ROUTES.projectNew}>
 							<Button className='bg-card text-primary hover:opacity-95' haptic='medium'>
 								<FolderKanban size={16} />
@@ -144,6 +152,8 @@ export default async function DashboardPage() {
 			</section>
 
 			<StreakCard streak={streak} />
+
+			<QuickLogTeaser />
 
 			<WrappedTeaser
 				stats={{
