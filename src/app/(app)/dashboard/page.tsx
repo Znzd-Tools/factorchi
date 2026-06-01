@@ -20,6 +20,8 @@ import {
 	getFunInsight,
 } from '@/features/dashboard/utils/stats';
 import { StreakCard } from '@/features/engagement/components/StreakCard';
+import { WrappedTeaser } from '@/features/engagement/components/WrappedTeaser';
+import { computeMonthlyWrapped } from '@/features/engagement/utils/monthly-wrapped';
 import { computeTimeStreak } from '@/features/engagement/utils/time-streak';
 import {
 	formatJalaliMonthLabel,
@@ -41,7 +43,10 @@ export default async function DashboardPage() {
 	const [{ data: projects }, { data: timeEntries }, { data: invoices }] = await Promise.all([
 		supabase.from('projects').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }),
 		supabase.from('time_entries').select('project_id, hours, work_date').eq('user_id', user.id),
-		supabase.from('invoices').select('status, total').eq('user_id', user.id),
+		supabase
+			.from('invoices')
+			.select('project_id, status, total, issue_date')
+			.eq('user_id', user.id),
 	]);
 
 	const monthlyTimeEntries = (timeEntries ?? []).filter(
@@ -57,6 +62,13 @@ export default async function DashboardPage() {
 
 	const workDates = [...new Set((timeEntries ?? []).map((entry) => entry.work_date))];
 	const streak = computeTimeStreak(workDates);
+	const monthlyWrapped = computeMonthlyWrapped(
+		year,
+		month,
+		projects ?? [],
+		timeEntries ?? [],
+		invoices ?? [],
+	);
 
 	const greeting = getDashboardGreeting();
 	const insight = getFunInsight(stats);
@@ -127,6 +139,18 @@ export default async function DashboardPage() {
 			</section>
 
 			<StreakCard streak={streak} />
+
+			<WrappedTeaser
+				stats={{
+					year: monthlyWrapped.year,
+					month: monthlyWrapped.month,
+					monthLabel: monthlyWrapped.monthLabel,
+					headline: monthlyWrapped.headline,
+					totalHours: monthlyWrapped.totalHours,
+					paidTotal: monthlyWrapped.paidTotal,
+					hasActivity: monthlyWrapped.hasActivity,
+				}}
+			/>
 
 			<div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
 				{quickStats.map((item) => (

@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils/cn';
 
 const ROUTE_TITLES: Record<string, string> = {
 	[ROUTES.dashboard]: 'داشبورد',
+	[ROUTES.monthlyWrapped]: 'خلاصه ماه',
 	[ROUTES.projects]: 'پروژه‌ها',
 	[ROUTES.projectNew]: 'پروژه جدید',
 	[ROUTES.profile]: 'پروفایل',
@@ -48,6 +49,10 @@ function resolveTitle(pathname: string): string {
 function getBackHref(pathname: string): string | null {
 	if (pathname === ROUTES.paymentMethods) {
 		return ROUTES.profile;
+	}
+
+	if (pathname === ROUTES.monthlyWrapped) {
+		return ROUTES.dashboard;
 	}
 
 	if (pathname === ROUTES.projectNew) {

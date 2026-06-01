@@ -1,6 +1,7 @@
 export const ROUTES = {
 	home: '/',
 	dashboard: '/dashboard',
+	monthlyWrapped: '/dashboard/wrapped',
 	login: '/login',
 	register: '/register',
 	profile: '/profile',
