@@ -7,6 +7,7 @@ import { formatJalaliDate } from '@/lib/jalali';
 import { getCurrencyLabel } from '@/features/invoice/constants/currencies';
 import { toFaNumber } from '@/lib/locale/persian-digits';
 import { formatMoney } from '@/lib/money';
+import type { ITimeEntryTodoOption } from '@/features/todos/components/TimeEntryTodoPicker';
 import type { TimeEntry } from '@/lib/supabase/database.types';
 
 interface ITimesheetEntriesTableProps {
@@ -15,6 +16,7 @@ interface ITimesheetEntriesTableProps {
 	year: number;
 	month: number;
 	entries: TimeEntry[];
+	openTodos: ITimeEntryTodoOption[];
 }
 
 export function TimesheetEntriesTable({
@@ -23,6 +25,7 @@ export function TimesheetEntriesTable({
 	year,
 	month,
 	entries,
+	openTodos,
 }: ITimesheetEntriesTableProps) {
 	const totals = aggregateMonthly(
 		entries.map((entry) => ({
@@ -37,7 +40,7 @@ export function TimesheetEntriesTable({
 			title='ردیف‌های ماه'
 			description={`${toFaNumber(totals.entryCount)} ردیف — ${formatHoursAsDurationFa(totals.totalHours)} — ${formatMoney(totals.totalAmount)} ${currencyLabel}`}
 		>
-			<TimesheetCreateEntry projectId={projectId} year={year} month={month} />
+			<TimesheetCreateEntry projectId={projectId} year={year} month={month} openTodos={openTodos} />
 
 			{entries.length === 0 ? (
 				<p className='py-8 text-center text-sm text-muted-foreground'>
@@ -73,7 +76,7 @@ export function TimesheetEntriesTable({
 										<p className='mt-2 text-sm text-muted-foreground'>{entry.description}</p>
 									)}
 									<div className='mt-3 flex justify-end border-t border-border pt-3'>
-										<TimesheetRowActions projectId={projectId} entry={entry} />
+										<TimesheetRowActions projectId={projectId} entry={entry} openTodos={openTodos} />
 									</div>
 								</div>
 							);
@@ -113,7 +116,7 @@ export function TimesheetEntriesTable({
 												{entry.description || '—'}
 											</td>
 											<td className='px-3 py-3'>
-												<TimesheetRowActions projectId={projectId} entry={entry} />
+												<TimesheetRowActions projectId={projectId} entry={entry} openTodos={openTodos} />
 											</td>
 										</tr>
 									);

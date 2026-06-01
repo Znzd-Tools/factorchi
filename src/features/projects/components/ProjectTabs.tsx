@@ -1,6 +1,7 @@
 'use client';
 
 import {
+	CheckSquare,
 	Clock,
 	FileText,
 	LayoutDashboard,
@@ -28,6 +29,7 @@ export function ProjectTabs({ projectId, projectType }: IProjectTabsProps) {
 
 	const tabs = [
 		{ label: 'داشبورد', href: ROUTES.project(projectId), icon: LayoutDashboard, show: true },
+		{ label: 'کارها', href: ROUTES.projectTodos(projectId), icon: CheckSquare, show: true },
 		{
 			label: 'تایم‌شیت',
 			href: ROUTES.projectTimesheet(projectId),
@@ -39,7 +41,12 @@ export function ProjectTabs({ projectId, projectType }: IProjectTabsProps) {
 	].filter((tab) => tab.show);
 
 	function isTabActive(href: string): boolean {
-		if (href.endsWith('/settings') || href.includes('/timesheet') || href.includes('/invoices')) {
+		if (
+			href.endsWith('/settings') ||
+			href.includes('/timesheet') ||
+			href.includes('/invoices') ||
+			href.includes('/todos')
+		) {
 			return pathname === href || pathname.startsWith(`${href}/`);
 		}
 

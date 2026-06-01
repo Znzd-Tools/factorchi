@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import { toast } from 'sonner';
 
@@ -15,6 +15,10 @@ import {
 	createTimeEntry,
 	updateTimeEntry,
 } from '@/features/timesheet/actions/time-entry.actions';
+import {
+	TimeEntryTodoPicker,
+	type ITimeEntryTodoOption,
+} from '@/features/todos/components/TimeEntryTodoPicker';
 import type { TimeEntry } from '@/lib/supabase/database.types';
 
 interface ITimeEntryFormProps {
@@ -23,6 +27,10 @@ interface ITimeEntryFormProps {
 	projectId: string;
 	defaultWorkDate: string;
 	entry?: TimeEntry | null;
+	openTodos?: ITimeEntryTodoOption[];
+	initialDescription?: string;
+	initialHours?: number;
+	onSaved?: () => void;
 }
 
 export function TimeEntryForm({
@@ -31,18 +39,39 @@ export function TimeEntryForm({
 	projectId,
 	defaultWorkDate,
 	entry,
+	openTodos = [],
+	initialDescription = '',
+	initialHours,
+	onSaved,
 }: ITimeEntryFormProps) {
 	const router = useRouter();
 	const { trigger: triggerCelebration } = useCelebration();
 	const [pending, startTransition] = useTransition();
 	const [workDate, setWorkDate] = useState(entry?.work_date ?? defaultWorkDate);
-	const [hours, setHours] = useState<number | ''>(entry?.hours ?? '');
+	const [hours, setHours] = useState<number | ''>(entry?.hours ?? initialHours ?? '');
+	const [description, setDescription] = useState(entry?.description ?? initialDescription);
+	const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
 	const isEditing = Boolean(entry);
+
+	useEffect(() => {
+		if (!open || isEditing) {
+			return;
+		}
+
+		setWorkDate(defaultWorkDate);
+		setHours(initialHours ?? '');
+		setDescription(initialDescription);
+		setSelectedTodoId(null);
+	}, [open, defaultWorkDate, initialDescription, initialHours, isEditing]);
+
+	const handleTodoSelect = (todo: ITimeEntryTodoOption | null) => {
+		setSelectedTodoId(todo?.id ?? null);
+		setDescription(todo?.title ?? '');
+	};
 
 	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		const formData = new FormData(event.currentTarget);
-		const description = String(formData.get('description') ?? '').trim() || null;
+		const trimmedDescription = description.trim() || null;
 
 		if (!workDate) {
 			toast.error('تاریخ الزامی است.');
@@ -60,13 +89,13 @@ export function TimeEntryForm({
 						id: entry!.id,
 						workDate,
 						hours: Number(hours),
-						description,
+						description: trimmedDescription,
 					})
 				: await createTimeEntry({
 						projectId,
 						workDate,
 						hours: Number(hours),
-						description,
+						description: trimmedDescription,
 					});
 
 			if (result.error) {
@@ -80,6 +109,7 @@ export function TimeEntryForm({
 				triggerCelebration(result.celebration);
 			}
 
+			onSaved?.();
 			onClose();
 			router.refresh();
 		});
@@ -91,15 +121,27 @@ export function TimeEntryForm({
 			onClose={onClose}
 			title={isEditing ? 'ویرایش ساعت کار' : 'ثبت ساعت کار'}
 		>
-			<form key={entry?.id ?? defaultWorkDate} onSubmit={handleSubmit} className='space-y-4'>
+			<form key={entry?.id ?? `${defaultWorkDate}-${initialDescription}`} onSubmit={handleSubmit} className='space-y-4'>
 				<JalaliDatePicker label='تاریخ' value={workDate} onChange={setWorkDate} />
 
 				<DurationInput label='مدت زمان (ساعت:دقیقه)' value={hours} onChange={setHours} />
 
+				{!isEditing && openTodos.length > 0 && (
+					<TimeEntryTodoPicker
+						todos={openTodos}
+						selectedId={selectedTodoId}
+						onSelect={handleTodoSelect}
+					/>
+				)}
+
 				<Input
 					label='توضیحات (اختیاری)'
 					name='description'
-					defaultValue={entry?.description ?? ''}
+					value={description}
+					onChange={(event) => {
+						setDescription(event.target.value);
+						setSelectedTodoId(null);
+					}}
 					placeholder='شرح کار انجام‌شده'
 				/>
 

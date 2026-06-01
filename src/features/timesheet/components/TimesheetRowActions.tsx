@@ -9,14 +9,16 @@ import { toast } from 'sonner';
 import { Button } from '@/components/atoms/Button';
 import { TimeEntryForm } from '@/features/timesheet/components/TimeEntryForm';
 import { deleteTimeEntry } from '@/features/timesheet/actions/time-entry.actions';
+import type { ITimeEntryTodoOption } from '@/features/todos/components/TimeEntryTodoPicker';
 import type { TimeEntry } from '@/lib/supabase/database.types';
 
 interface ITimesheetRowActionsProps {
 	projectId: string;
 	entry: TimeEntry;
+	openTodos: ITimeEntryTodoOption[];
 }
 
-export function TimesheetRowActions({ projectId, entry }: ITimesheetRowActionsProps) {
+export function TimesheetRowActions({ projectId, entry, openTodos }: ITimesheetRowActionsProps) {
 	const router = useRouter();
 	const [editOpen, setEditOpen] = useState(false);
 	const [pending, startTransition] = useTransition();
@@ -72,6 +74,7 @@ export function TimesheetRowActions({ projectId, entry }: ITimesheetRowActionsPr
 				projectId={projectId}
 				defaultWorkDate={entry.work_date}
 				entry={entry}
+				openTodos={openTodos}
 			/>
 		</>
 	);

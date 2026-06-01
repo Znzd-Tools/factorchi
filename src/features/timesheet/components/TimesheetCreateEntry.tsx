@@ -7,14 +7,16 @@ import { Button } from '@/components/atoms/Button';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { TimeEntryForm } from '@/features/timesheet/components/TimeEntryForm';
 import { getDefaultWorkDateForMonth } from '@/features/timesheet/utils/month-params';
+import type { ITimeEntryTodoOption } from '@/features/todos/components/TimeEntryTodoPicker';
 
 interface ITimesheetCreateEntryProps {
 	projectId: string;
 	year: number;
 	month: number;
+	openTodos: ITimeEntryTodoOption[];
 }
 
-export function TimesheetCreateEntry({ projectId, year, month }: ITimesheetCreateEntryProps) {
+export function TimesheetCreateEntry({ projectId, year, month, openTodos }: ITimesheetCreateEntryProps) {
 	const [open, setOpen] = useState(false);
 	const defaultWorkDate = getDefaultWorkDateForMonth(year, month);
 
@@ -39,6 +41,7 @@ export function TimesheetCreateEntry({ projectId, year, month }: ITimesheetCreat
 				onClose={() => setOpen(false)}
 				projectId={projectId}
 				defaultWorkDate={defaultWorkDate}
+				openTodos={openTodos}
 			/>
 		</>
 	);
