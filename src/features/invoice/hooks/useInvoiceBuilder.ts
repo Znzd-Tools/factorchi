@@ -14,6 +14,7 @@ import type {
 } from '@/features/invoice/interface/invoice.types';
 import { calculateInvoiceTotals } from '@/features/invoice/utils/calculations';
 import { cleanNumber } from '@/features/invoice/utils/number';
+import { formatJalaliDate } from '@/lib/jalali';
 
 const createInitialItems = (): IInvoiceItem[] => [
 	{ id: 1, title: 'شرح خدمت', type: 'hourly', value: '' },
@@ -23,8 +24,8 @@ export const useInvoiceBuilder = () => {
 	const [step, setStep] = useState(1);
 	const [profession, setProfession] = useState<Profession>('freelancer');
 	const [clientName, setClientName] = useState('شرکت / شخص نمونه');
-	const [invoiceNo, setInvoiceNo] = useState('INV-1001');
-	const [invoiceDate, setInvoiceDate] = useState(new Date().toLocaleDateString('fa-IR'));
+	const [invoiceNo, setInvoiceNo] = useState('فاک-۱۰۰۱');
+	const [invoiceDate, setInvoiceDate] = useState(() => formatJalaliDate(new Date()));
 	const [period, setPeriod] = useState('');
 	const [currency, setCurrency] = useState<CurrencyCode>('toman');
 	const [hourlyRate, setHourlyRate] = useState<number | ''>(500000);

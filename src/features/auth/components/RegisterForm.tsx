@@ -33,9 +33,9 @@ export function RegisterForm() {
 			<Button type='submit' className='w-full' disabled={pending}>
 				{pending ? 'در حال ثبت‌نام...' : 'ثبت‌نام'}
 			</Button>
-			<p className='text-center text-sm text-slate-500'>
+			<p className='text-center text-sm text-muted-foreground'>
 				حساب دارید؟{' '}
-				<Link href={ROUTES.login} className='text-blue-600 hover:underline'>
+				<Link href={ROUTES.login} className='font-bold text-primary hover:underline'>
 					ورود
 				</Link>
 			</p>

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import {
 	formatDurationTyping,
 	formatHoursAsDuration,
+	formatHoursAsDurationFa,
 	isValidDuration,
 	parseDurationToHours,
 } from '@/lib/duration';
@@ -26,7 +27,7 @@ function valueToText(value: number | ''): string {
 		return '';
 	}
 
-	return formatHoursAsDuration(Number(value));
+	return formatHoursAsDurationFa(Number(value));
 }
 
 export function DurationInput({
@@ -35,7 +36,7 @@ export function DurationInput({
 	onChange,
 	error,
 	className,
-	placeholder = '0:00',
+	placeholder = '۰:۰۰',
 	maxHours = 24,
 }: IDurationInputProps) {
 	const [draft, setDraft] = useState(() => valueToText(value));

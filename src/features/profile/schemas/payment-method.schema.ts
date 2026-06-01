@@ -20,7 +20,7 @@ const cryptoDetailsSchema = z
 		address: z.string(),
 	})
 	.refine((details) => details.coin.trim() || details.address.trim(), {
-		message: 'حداقل نوع ارز یا آدرس ولت الزامی است.',
+		message: 'حداقل نوع ارز یا آدرس کیف پول الزامی است.',
 		path: ['coin'],
 	});
 

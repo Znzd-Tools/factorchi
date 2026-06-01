@@ -1,3 +1,4 @@
+import { toFaNumber } from '@/lib/locale/persian-digits';
 import type { Invoice, Project, TimeEntry } from '@/lib/supabase/database.types';
 
 export interface IGlobalDashboardStats {
@@ -101,7 +102,7 @@ export function getFunInsight(stats: IGlobalDashboardStats): string {
 	}
 
 	if (stats.draftInvoiceCount > 0) {
-		return `${stats.draftInvoiceCount.toLocaleString('fa-IR')} فاکتور پیش‌نویس داری — وقت ارسالشه.`;
+		return `${toFaNumber(stats.draftInvoiceCount)} فاکتور پیش‌نویس داری — وقت ارسالشه.`;
 	}
 
 	return 'ادامه بده؛ هر ساعت ثبت‌شده، فاکتور بعدی رو دقیق‌تر می‌کنه.';

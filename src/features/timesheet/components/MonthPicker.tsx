@@ -2,25 +2,26 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { newDate as newJalaliDate } from 'date-fns-jalali';
-import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 
+import { HapticLink } from '@/components/ui/HapticLink';
 import { formatJalaliMonthLabel } from '@/lib/jalali';
 import {
 	buildJalaliMonthHref,
 	getAdjacentJalaliMonth,
 	resolveJalaliMonthParams,
 } from '@/features/timesheet/utils/month-params';
+import { cn } from '@/lib/utils/cn';
 
 const navButtonClassName =
-	'inline-flex items-center justify-center rounded-xl px-3 py-1.5 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground';
+	'touch-target inline-flex items-center justify-center rounded-xl text-muted-foreground transition-colors active:bg-muted active:text-foreground';
 
 export function MonthPickerFallback() {
 	return (
-		<div className='flex items-center justify-between gap-4 rounded-2xl border border-border bg-card px-4 py-3 shadow-sm'>
-			<div className='h-8 w-8 animate-pulse rounded-xl bg-muted' />
+		<div className='flex items-center justify-between gap-4 rounded-2xl border border-border bg-card px-4 py-3 shadow-[var(--shadow-soft)]'>
+			<div className='h-10 w-10 animate-pulse rounded-xl bg-muted' />
 			<div className='h-5 w-28 animate-pulse rounded bg-muted' />
-			<div className='h-8 w-8 animate-pulse rounded-xl bg-muted' />
+			<div className='h-10 w-10 animate-pulse rounded-xl bg-muted' />
 		</div>
 	);
 }
@@ -34,26 +35,28 @@ export function MonthPicker() {
 	const next = getAdjacentJalaliMonth(year, month, 'next');
 
 	return (
-		<div className='flex items-center justify-between gap-4 rounded-2xl border border-border bg-card px-4 py-3 shadow-sm'>
-			<Link
+		<div className='flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-3 py-2 shadow-[var(--shadow-soft)] sm:px-4 sm:py-3'>
+			<HapticLink
 				href={buildJalaliMonthHref(pathname, searchParams, prev.year, prev.month)}
 				prefetch={false}
 				scroll={false}
+				haptic='selection'
 				className={navButtonClassName}
 				aria-label='ماه قبل'
 			>
-				<ChevronRight size={18} />
-			</Link>
-			<p className='text-base font-bold text-foreground'>{formatJalaliMonthLabel(current)}</p>
-			<Link
+				<ChevronRight size={20} />
+			</HapticLink>
+			<p className='text-base font-black text-foreground'>{formatJalaliMonthLabel(current)}</p>
+			<HapticLink
 				href={buildJalaliMonthHref(pathname, searchParams, next.year, next.month)}
 				prefetch={false}
 				scroll={false}
-				className={navButtonClassName}
+				haptic='selection'
+				className={cn(navButtonClassName)}
 				aria-label='ماه بعد'
 			>
-				<ChevronLeft size={18} />
-			</Link>
+				<ChevronLeft size={20} />
+			</HapticLink>
 		</div>
 	);
 }

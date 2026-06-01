@@ -1,6 +1,9 @@
-import Link from 'next/link';
+import { CreditCard, User } from 'lucide-react';
 
 import { Card } from '@/components/atoms/Card';
+import { HapticLink } from '@/components/ui/HapticLink';
+import { ListGroup } from '@/components/ui/ListRow';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { ROUTES } from '@/config/routes';
 import { ProfileForm } from '@/features/profile/components/ProfileForm';
 import { requireUser } from '@/lib/auth/require-user';
@@ -17,11 +20,8 @@ export default async function ProfilePage() {
 		.single();
 
 	return (
-		<div className='space-y-6'>
-			<div>
-				<h1 className='text-2xl font-black text-slate-900'>پروفایل</h1>
-				<p className='mt-1 text-sm text-slate-500'>اطلاعات حساب و تنظیمات پیش‌فرض</p>
-			</div>
+		<div className='space-y-6 pb-2'>
+			<PageHeader title='پروفایل' description='اطلاعات حساب و تنظیمات پیش‌فرض' />
 
 			<Card title='اطلاعات کاربری' description='نام و ارز پیش‌فرض برای پروژه‌ها و فاکتورها'>
 				<ProfileForm
@@ -31,14 +31,31 @@ export default async function ProfilePage() {
 				/>
 			</Card>
 
-			<Card title='روش‌های پرداخت' description='مدیریت حساب‌های بانکی و آدرس‌های کریپتو'>
-				<Link
-					href={ROUTES.paymentMethods}
-					className='text-sm font-bold text-blue-600 hover:underline'
-				>
-					مدیریت روش‌های پرداخت
-				</Link>
-			</Card>
+			<section className='space-y-3'>
+				<h2 className='text-sm font-bold text-muted-foreground'>تنظیمات</h2>
+				<ListGroup>
+					<HapticLink
+						href={ROUTES.paymentMethods}
+						haptic='light'
+						className='flex items-center gap-3 px-4 py-4 transition-colors active:bg-muted'
+					>
+						<div className='flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary'>
+							<CreditCard size={18} aria-hidden />
+						</div>
+						<div className='min-w-0 flex-1'>
+							<p className='font-bold text-foreground'>روش‌های پرداخت</p>
+							<p className='text-sm text-muted-foreground'>حساب بانکی و آدرس کریپتو</p>
+						</div>
+					</HapticLink>
+				</ListGroup>
+			</section>
+
+			<div className='flex items-center gap-3 rounded-2xl border border-border bg-muted/50 px-4 py-3'>
+				<User size={18} className='text-muted-foreground' aria-hidden />
+				<p className='truncate text-sm text-muted-foreground' dir='ltr'>
+					{user.email}
+				</p>
+			</div>
 		</div>
 	);
 }

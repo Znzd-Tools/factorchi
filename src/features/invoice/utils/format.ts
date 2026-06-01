@@ -1,7 +1,3 @@
-export const toFa = (num: number | string | null | undefined): string => {
-	if (num === null || num === undefined || num === '') {
-		return '';
-	}
+import { toFaNumber } from '@/lib/locale/persian-digits';
 
-	return Number(num).toLocaleString('fa-IR');
-};
+export const toFa = toFaNumber;

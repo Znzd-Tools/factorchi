@@ -32,9 +32,9 @@ export function LoginForm() {
 			<Button type='submit' className='w-full' disabled={pending}>
 				{pending ? 'در حال ورود...' : 'ورود'}
 			</Button>
-			<p className='text-center text-sm text-slate-500'>
+			<p className='text-center text-sm text-muted-foreground'>
 				حساب ندارید؟{' '}
-				<Link href={ROUTES.register} className='text-blue-600 hover:underline'>
+				<Link href={ROUTES.register} className='font-bold text-primary hover:underline'>
 					ثبت‌نام
 				</Link>
 			</p>

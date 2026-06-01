@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { FolderKanban, Plus } from 'lucide-react';
 
 import { Button } from '@/components/atoms/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { ROUTES } from '@/config/routes';
 import { ProjectCard } from '@/features/projects/components/ProjectCard';
 import { requireUser } from '@/lib/auth/require-user';
@@ -23,26 +26,35 @@ export default async function ProjectsPage() {
 	const activeProjects = projects ?? [];
 
 	return (
-		<div className='space-y-6'>
-			<div className='flex flex-wrap items-center justify-between gap-4'>
-				<div>
-					<h1 className='text-2xl font-black text-slate-900'>پروژه‌ها</h1>
-					<p className='mt-1 text-sm text-slate-500'>مدیریت پروژه‌ها، زمان و فاکتورها</p>
-				</div>
-				<Link href={ROUTES.projectNew}>
-					<Button>پروژه جدید</Button>
-				</Link>
-			</div>
+		<div className='space-y-6 pb-2'>
+			<PageHeader
+				title='پروژه‌ها'
+				description='مدیریت پروژه‌ها، زمان و فاکتورها'
+				action={
+					<Link href={ROUTES.projectNew}>
+						<Button size='sm' haptic='medium'>
+							<Plus size={16} />
+							<span className='sr-only sm:not-sr-only'>جدید</span>
+						</Button>
+					</Link>
+				}
+			/>
 
 			{activeProjects.length === 0 ? (
-				<div className='rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center'>
-					<p className='text-slate-600'>هنوز پروژه‌ای ثبت نشده است.</p>
-					<Link href={ROUTES.projectNew} className='mt-4 inline-block'>
-						<Button>ایجاد اولین پروژه</Button>
-					</Link>
-				</div>
+				<EmptyState
+					icon={FolderKanban}
+					title='هنوز پروژه‌ای ندارید'
+					description='اولین پروژه را بسازید تا ساعت و فاکتور را از همین‌جا مدیریت کنید.'
+					action={
+						<Link href={ROUTES.projectNew} className='block w-full'>
+							<Button className='w-full' haptic='success'>
+								ایجاد اولین پروژه
+							</Button>
+						</Link>
+					}
+				/>
 			) : (
-				<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+				<div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
 					{activeProjects.map((project) => (
 						<ProjectCard key={project.id} project={project} />
 					))}

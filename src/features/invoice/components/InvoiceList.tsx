@@ -12,9 +12,8 @@ import {
 	INVOICE_STATUS_LABELS,
 	INVOICE_STATUS_TRANSITIONS,
 } from '@/features/invoice/constants/invoice-status';
-import { CURRENCIES } from '@/features/invoice/constants/currencies';
+import { getCurrencySymbol } from '@/features/invoice/constants/currencies';
 import type { InvoiceWithLineItems } from '@/features/invoice/interface/invoice-db.types';
-import type { CurrencyCode } from '@/features/invoice/interface/invoice.types';
 import { formatJalaliDate } from '@/lib/jalali';
 import type { InvoiceStatus } from '@/lib/supabase/database.types';
 import { formatMoney } from '@/lib/money';
@@ -33,7 +32,7 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 	);
 	const [isPending, startTransition] = useTransition();
 
-	const currencySymbol = CURRENCIES[currency as CurrencyCode]?.symbol ?? currency;
+	const currencySymbol = getCurrencySymbol(currency);
 
 	const filteredInvoices = useMemo(() => {
 		if (statusFilter === ALL_STATUS_FILTER) {
@@ -89,13 +88,13 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 			</div>
 
 			{filteredInvoices.length === 0 ? (
-				<div className='rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500'>
+				<div className='rounded-2xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground'>
 					فاکتوری یافت نشد.
 				</div>
 			) : (
-				<div className='overflow-x-auto rounded-2xl border border-slate-200 bg-white'>
+				<div className='overflow-x-auto rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)]'>
 					<table className='w-full min-w-[720px] text-right text-sm'>
-						<thead className='bg-slate-50 text-slate-500'>
+						<thead className='bg-muted text-muted-foreground'>
 							<tr>
 								<th className='px-4 py-3 font-bold'>شماره</th>
 								<th className='px-4 py-3 font-bold'>تاریخ</th>
@@ -105,19 +104,19 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 								<th className='px-4 py-3 font-bold'>عملیات</th>
 							</tr>
 						</thead>
-						<tbody className='divide-y divide-slate-100'>
+						<tbody className='divide-y divide-border'>
 							{filteredInvoices.map((invoice) => {
 								const transitions = INVOICE_STATUS_TRANSITIONS[invoice.status];
 
 								return (
-									<tr key={invoice.id} className='hover:bg-slate-50/80'>
+									<tr key={invoice.id} className='transition-colors hover:bg-muted/50'>
 										<td className='px-4 py-3 font-bold tabular-nums' dir='ltr'>
 											{invoice.invoice_no}
 										</td>
 										<td className='px-4 py-3 tabular-nums'>
 											{formatJalaliDate(invoice.issue_date)}
 										</td>
-										<td className='px-4 py-3 text-slate-600'>
+										<td className='px-4 py-3 text-muted-foreground'>
 											{invoice.period_start && invoice.period_end
 												? `${formatJalaliDate(invoice.period_start)} — ${formatJalaliDate(invoice.period_end)}`
 												: invoice.percentage
@@ -128,7 +127,7 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 											{formatMoney(invoice.total)} {currencySymbol}
 										</td>
 										<td className='px-4 py-3'>
-											<span className='rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700'>
+											<span className='rounded-lg bg-muted px-2 py-1 text-xs font-bold text-foreground'>
 												{INVOICE_STATUS_LABELS[invoice.status]}
 											</span>
 										</td>

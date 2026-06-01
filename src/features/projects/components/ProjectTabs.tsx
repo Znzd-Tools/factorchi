@@ -6,12 +6,11 @@ import {
 	LayoutDashboard,
 	Settings,
 } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ROUTES } from '@/config/routes';
 import type { ProjectType } from '@/lib/supabase/database.types';
-import { cn } from '@/lib/utils/cn';
 
 interface IProjectTabsProps {
 	projectId: string;
@@ -47,29 +46,12 @@ export function ProjectTabs({ projectId, projectType }: IProjectTabsProps) {
 		return pathname === href;
 	}
 
-	return (
-		<nav className='-mx-1 flex gap-1 overflow-x-auto border-b border-border pb-px'>
-			{tabs.map((tab) => {
-				const active = isTabActive(tab.href);
-				const Icon = tab.icon;
-				const href = appendSearchParams(tab.href, searchParams);
+	const items = tabs.map((tab) => ({
+		label: tab.label,
+		href: appendSearchParams(tab.href, searchParams),
+		icon: tab.icon,
+		active: isTabActive(tab.href),
+	}));
 
-				return (
-					<Link
-						key={tab.href}
-						href={href}
-						className={cn(
-							'flex shrink-0 items-center gap-2 rounded-t-xl px-3 py-2.5 text-sm font-bold transition-colors sm:px-4',
-							active
-								? 'border border-b-0 border-border bg-card text-blue-600 dark:text-blue-400'
-								: 'text-muted-foreground hover:bg-muted hover:text-foreground',
-						)}
-					>
-						<Icon size={16} />
-						{tab.label}
-					</Link>
-				);
-			})}
-		</nav>
-	);
+	return <SegmentedControl items={items} />;
 }

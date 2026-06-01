@@ -3,7 +3,7 @@
 import { Calendar, CreditCard, Printer } from 'lucide-react';
 
 import { Button } from '@/components/atoms/Button';
-import { CURRENCIES } from '@/features/invoice/constants/currencies';
+import { CURRENCIES, getCurrencyLabel, getCurrencySymbol } from '@/features/invoice/constants/currencies';
 import type { InvoiceDetail } from '@/features/invoice/interface/invoice-db.types';
 import type { CurrencyCode } from '@/features/invoice/interface/invoice.types';
 import { formatHoursAsDurationFa } from '@/lib/duration';
@@ -32,6 +32,7 @@ interface ICryptoDetails {
 
 export function ProjectInvoicePreview({ invoice }: IProjectInvoicePreviewProps) {
 	const currency = invoice.project.currency as CurrencyCode;
+	const currencySymbol = getCurrencySymbol(currency);
 	const paymentMethod = invoice.payment_method;
 	const bankDetails = normalizeBankDetails(
 		(paymentMethod?.details as IBankDetails | undefined) ?? {},
@@ -124,10 +125,10 @@ export function ProjectInvoicePreview({ invoice }: IProjectInvoicePreviewProps) 
 										مقدار/ساعت
 									</th>
 									<th className='w-32 px-5 py-4 text-left font-bold text-slate-600'>
-										نرخ ({CURRENCIES[currency].symbol})
+										نرخ ({currencySymbol})
 									</th>
 									<th className='w-48 px-5 py-4 text-left font-bold text-slate-600'>
-										مبلغ کل ({CURRENCIES[currency].symbol})
+										مبلغ کل ({currencySymbol})
 									</th>
 								</tr>
 							</thead>
@@ -227,7 +228,7 @@ export function ProjectInvoicePreview({ invoice }: IProjectInvoicePreviewProps) 
 											)}
 											{cryptoDetails.address && (
 												<div className='mt-2'>
-													<div className='mb-1 text-xs text-slate-500'>آدرس ولت:</div>
+													<div className='mb-1 text-xs text-slate-500'>آدرس کیف پول:</div>
 													<div
 														className='break-all rounded-lg border border-blue-100 bg-white p-2 text-xs font-bold tabular-nums'
 														dir='ltr'
@@ -246,7 +247,7 @@ export function ProjectInvoicePreview({ invoice }: IProjectInvoicePreviewProps) 
 							<div className='flex items-center justify-between px-4 text-slate-600'>
 								<span>جمع کل:</span>
 								<span className='font-bold tabular-nums'>
-									{formatMoney(invoice.subtotal)} {CURRENCIES[currency].symbol}
+									{formatMoney(invoice.subtotal)} {currencySymbol}
 								</span>
 							</div>
 
@@ -260,7 +261,7 @@ export function ProjectInvoicePreview({ invoice }: IProjectInvoicePreviewProps) 
 										:
 									</span>
 									<span className='font-bold tabular-nums'>
-										{formatMoney(invoice.tax_amount)} {CURRENCIES[currency].symbol}
+										{formatMoney(invoice.tax_amount)} {currencySymbol}
 									</span>
 								</div>
 							)}
@@ -269,9 +270,7 @@ export function ProjectInvoicePreview({ invoice }: IProjectInvoicePreviewProps) 
 								<span className='text-lg font-bold'>مبلغ نهایی:</span>
 								<span className='text-left text-2xl font-black tabular-nums'>
 									{formatMoney(invoice.total)}{' '}
-									<span className='text-sm font-normal opacity-70'>
-										{CURRENCIES[currency].symbol}
-									</span>
+									<span className='text-sm font-normal opacity-70'>{currencySymbol}</span>
 								</span>
 							</div>
 
@@ -281,8 +280,7 @@ export function ProjectInvoicePreview({ invoice }: IProjectInvoicePreviewProps) 
 									<span className='text-left text-lg font-black tabular-nums'>
 										{toFa(altTotal.toFixed(2))}{' '}
 										<span className='text-xs font-normal opacity-70'>
-											{CURRENCIES[invoice.alt_currency as CurrencyCode]?.symbol ??
-												invoice.alt_currency}
+											{getCurrencyLabel(invoice.alt_currency)}
 										</span>
 									</span>
 								</div>

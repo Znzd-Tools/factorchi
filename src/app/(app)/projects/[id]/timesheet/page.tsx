@@ -10,6 +10,7 @@ import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/component
 import { TimesheetEntriesTable } from '@/features/timesheet/components/TimesheetEntriesTable';
 import { aggregateMonthly } from '@/features/timesheet/utils/aggregate';
 import { resolveJalaliMonthParams } from '@/features/timesheet/utils/month-params';
+import { getCurrencyLabel } from '@/features/invoice/constants/currencies';
 import { requireUser } from '@/lib/auth/require-user';
 import { formatHoursAsDurationFa } from '@/lib/duration';
 import { formatMoney } from '@/lib/money';
@@ -41,67 +42,50 @@ export default async function TimesheetPage({ params, searchParams }: ITimesheet
 
 	if (project.type !== 'hourly') {
 		return (
-			<div className='space-y-6'>
-				<div>
-					<h1 className='text-2xl font-black text-slate-900'>تایم‌شیت</h1>
-					<p className='mt-1 text-sm text-slate-500'>{project.name}</p>
+			<Card title='تایم‌شیت در دسترس نیست'>
+				<p className='text-sm leading-relaxed text-muted-foreground'>
+					این پروژه از نوع «قرارداد کل» است و ثبت ساعت برای آن فعال نیست.
+				</p>
+				<div className='mt-4'>
+					<Link href={ROUTES.project(id)}>
+						<Button variant='secondary'>بازگشت به داشبورد پروژه</Button>
+					</Link>
 				</div>
-				<Card title='تایم‌شیت در دسترس نیست'>
-					<p className='text-sm text-slate-600'>
-						این پروژه از نوع «قرارداد کل» است و ثبت ساعت برای آن فعال نیست.
-					</p>
-					<div className='mt-4'>
-						<Link href={ROUTES.project(id)}>
-							<Button variant='secondary'>بازگشت به داشبورد پروژه</Button>
-						</Link>
-					</div>
-				</Card>
-			</div>
+			</Card>
 		);
 	}
 
 	const entries = await getMonthlyEntries(id, sp.year, sp.month);
 	const totals = aggregateMonthly(entries);
+	const currencyLabel = getCurrencyLabel(project.currency);
 
 	return (
-		<div className='space-y-6'>
-			<div className='flex flex-wrap items-start justify-between gap-4'>
-				<div>
-					<h1 className='text-2xl font-black text-slate-900'>تایم‌شیت</h1>
-					<p className='mt-1 text-sm text-slate-500'>{project.name}</p>
-				</div>
-				<Link href={ROUTES.project(id)}>
-					<Button variant='secondary'>بازگشت به داشبورد</Button>
-				</Link>
-			</div>
-
+		<div className='space-y-5'>
 			<Suspense fallback={<MonthPickerFallback />}>
 				<MonthPicker />
 			</Suspense>
 
-			<div className='space-y-4'>
-				<div key={`${sp.year}-${sp.month}`} className='grid gap-4 sm:grid-cols-2'>
-					<Card title='مجموع ساعات'>
-						<p className='text-3xl font-black tabular-nums text-foreground' dir='ltr'>
-							{formatHoursAsDurationFa(totals.totalHours)}
-						</p>
-					</Card>
-					<Card title='مجموع مبلغ'>
-						<p className='text-3xl font-black tabular-nums text-slate-900'>
-							{formatMoney(totals.totalAmount)}{' '}
-							<span className='text-base font-bold text-slate-500'>{project.currency}</span>
-						</p>
-					</Card>
-				</div>
-
-				<TimesheetEntriesTable
-					projectId={id}
-					currency={project.currency}
-					year={sp.year}
-					month={sp.month}
-					entries={entries}
-				/>
+			<div key={`${sp.year}-${sp.month}`} className='grid grid-cols-2 gap-3'>
+				<Card title='مجموع ساعات' className='p-4'>
+					<p className='text-2xl font-black tabular-nums text-foreground' dir='ltr'>
+						{formatHoursAsDurationFa(totals.totalHours)}
+					</p>
+				</Card>
+				<Card title='مجموع مبلغ' className='p-4'>
+					<p className='text-2xl font-black tabular-nums text-foreground'>
+						{formatMoney(totals.totalAmount)}{' '}
+						<span className='text-sm font-bold text-muted-foreground'>{currencyLabel}</span>
+					</p>
+				</Card>
 			</div>
+
+			<TimesheetEntriesTable
+				projectId={id}
+				currency={project.currency}
+				year={sp.year}
+				month={sp.month}
+				entries={entries}
+			/>
 		</div>
 	);
 }

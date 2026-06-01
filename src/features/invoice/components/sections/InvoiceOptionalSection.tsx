@@ -215,7 +215,7 @@ export function InvoiceOptionalSection({
 								<div className='grid grid-cols-2 gap-2'>
 									<input
 										type='text'
-										placeholder='نوع ارز (مثلا USDT)'
+										placeholder='نوع ارز (مثلاً USDT)'
 										value={cryptoInfo.coin}
 										onChange={(event) => onCryptoInfoChange('coin', event.target.value)}
 										className='w-full p-2 border border-slate-200 rounded-lg text-sm text-left'
@@ -223,7 +223,7 @@ export function InvoiceOptionalSection({
 									/>
 									<input
 										type='text'
-										placeholder='شبکه (مثلا TRC20)'
+										placeholder='شبکه (مثلاً TRC20)'
 										value={cryptoInfo.network}
 										onChange={(event) => onCryptoInfoChange('network', event.target.value)}
 										className='w-full p-2 border border-slate-200 rounded-lg text-sm text-left'
@@ -232,7 +232,7 @@ export function InvoiceOptionalSection({
 								</div>
 								<input
 									type='text'
-									placeholder='آدرس ولت (Wallet Address)'
+									placeholder='آدرس کیف پول'
 									value={cryptoInfo.address}
 									onChange={(event) => onCryptoInfoChange('address', event.target.value)}
 									className='w-full p-2 border border-slate-200 rounded-lg text-sm text-left'

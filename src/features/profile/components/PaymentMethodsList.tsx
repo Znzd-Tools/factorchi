@@ -130,12 +130,12 @@ export function PaymentMethodsList({ paymentMethods }: IPaymentMethodsListProps)
 		<div className='space-y-6'>
 			<div className='flex items-center justify-between gap-4'>
 				<div>
-					<h1 className='text-2xl font-black text-slate-900'>روش‌های پرداخت</h1>
-					<p className='mt-1 text-sm text-slate-500'>
+					<h1 className='text-2xl font-black text-foreground'>روش‌های پرداخت</h1>
+					<p className='mt-1 text-sm text-muted-foreground'>
 						حساب‌های بانکی و آدرس‌های کریپتو برای درج در فاکتورها
 					</p>
 				</div>
-				<Button onClick={() => setCreateOpen(true)}>
+				<Button onClick={() => setCreateOpen(true)} haptic='medium'>
 					<Plus size={16} />
 					افزودن
 				</Button>

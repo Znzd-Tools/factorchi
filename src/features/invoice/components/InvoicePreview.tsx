@@ -45,7 +45,7 @@ export function InvoicePreview({ invoice }: IInvoicePreviewProps) {
 						<h1 className='text-4xl font-black text-slate-900 tracking-tight mb-2'>
 							صورت‌حساب خدمات
 						</h1>
-						<p className='text-slate-500 font-medium'>Freelance Services Invoice</p>
+						<p className='text-slate-500 font-medium'>فاکتور خدمات</p>
 					</div>
 					<div className='text-left space-y-1'>
 						<div className='flex items-center justify-end gap-2 text-sm'>
@@ -182,7 +182,7 @@ export function InvoicePreview({ invoice }: IInvoicePreviewProps) {
 										)}
 										{cryptoInfo.address && (
 											<div className='mt-2'>
-												<div className='text-slate-500 mb-1 text-xs'>آدرس ولت:</div>
+												<div className='text-slate-500 mb-1 text-xs'>آدرس کیف پول:</div>
 												<div
 													className='font-bold text-xs bg-white p-2 rounded-lg border border-blue-100 break-all tabular-nums'
 													dir='ltr'
@@ -192,7 +192,7 @@ export function InvoicePreview({ invoice }: IInvoicePreviewProps) {
 											</div>
 										)}
 										{!hasCryptoInfo && (
-											<span className='text-slate-400 text-xs'>اطلاعات ولت وارد نشده است</span>
+											<span className='text-slate-400 text-xs'>اطلاعات کیف پول وارد نشده است</span>
 										)}
 									</div>
 								)}

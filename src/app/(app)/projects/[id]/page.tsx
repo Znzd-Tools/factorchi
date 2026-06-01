@@ -9,8 +9,7 @@ import {
 } from 'lucide-react';
 
 import { Card } from '@/components/atoms/Card';
-import { CURRENCIES } from '@/features/invoice/constants/currencies';
-import type { CurrencyCode } from '@/features/invoice/interface/invoice.types';
+import { getCurrencySymbol } from '@/features/invoice/constants/currencies';
 import { computeDashboardStats } from '@/features/projects/utils/dashboard-stats';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
@@ -64,8 +63,7 @@ export default async function ProjectDashboardPage({
 	]);
 
 	const stats = computeDashboardStats(project, invoices ?? [], timeEntries ?? []);
-	const currencySymbol =
-		CURRENCIES[project.currency as CurrencyCode]?.symbol ?? project.currency;
+	const currencySymbol = getCurrencySymbol(project.currency);
 
 	const monthlyEntries =
 		project.type === 'hourly' ? await getMonthlyEntries(project.id, sp.year, sp.month) : [];
@@ -109,7 +107,7 @@ export default async function ProjectDashboardPage({
 						<Card key={card.title} title={card.title} description={card.description}>
 							<div className='flex items-center gap-3'>
 								<div className='rounded-xl bg-muted p-2.5'>
-									<Icon size={20} className='text-blue-600 dark:text-blue-400' />
+									<Icon size={20} className='text-primary' />
 								</div>
 								<p className={`text-xl font-black tabular-nums sm:text-2xl ${card.className}`}>
 									{card.value}
@@ -123,7 +121,7 @@ export default async function ProjectDashboardPage({
 			{project.type === 'hourly' && (
 				<div className='space-y-4'>
 					<div className='flex items-center gap-2'>
-						<CalendarDays size={20} className='text-blue-600' />
+						<CalendarDays size={20} className='text-primary' aria-hidden />
 						<h2 className='text-lg font-bold text-foreground'>گزارش ماهانه</h2>
 					</div>
 					<Suspense fallback={<MonthPickerFallback />}>
@@ -132,7 +130,7 @@ export default async function ProjectDashboardPage({
 					<div key={`${sp.year}-${sp.month}`} className='grid gap-4 sm:grid-cols-2'>
 						<Card title='ساعات این ماه'>
 							<div className='flex items-center gap-3'>
-								<Clock size={20} className='text-blue-600' />
+								<Clock size={20} className='text-primary' aria-hidden />
 								<p className='text-2xl font-black tabular-nums text-foreground' dir='ltr'>
 									{formatHoursAsDurationFa(monthlyTotals.totalHours)}
 								</p>

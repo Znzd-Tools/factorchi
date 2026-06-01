@@ -17,6 +17,7 @@ import {
 	generateHourlyLines,
 	generateTotalLine,
 } from '@/features/invoice/services/invoice-generator';
+import { formatInvoiceNumber } from '@/lib/invoice-number';
 import type { InvoiceStatus } from '@/lib/supabase/database.types';
 import { createClient } from '@/lib/supabase/server';
 
@@ -32,7 +33,7 @@ async function getNextInvoiceNo(projectId: string): Promise<string> {
 	}
 
 	const next = (count ?? 0) + 1;
-	return `INV-${String(next).padStart(3, '0')}`;
+	return formatInvoiceNumber(next);
 }
 
 export async function getProjectInvoices(

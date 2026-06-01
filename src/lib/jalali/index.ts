@@ -1,7 +1,5 @@
-import {
-	format,
-	parseISO,
-} from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import { toPersianDigits } from '@/lib/locale/persian-digits';
 import {
 	endOfMonth,
 	format as formatJalali,
@@ -13,11 +11,11 @@ import {
 
 export const formatJalaliDate = (date: Date | string, pattern = 'yyyy/MM/dd'): string => {
 	const value = typeof date === 'string' ? parseISO(date) : date;
-	return formatJalali(value, pattern);
+	return toPersianDigits(formatJalali(value, pattern));
 };
 
 export const formatJalaliMonthLabel = (date: Date): string => {
-	return formatJalali(date, 'MMMM yyyy');
+	return toPersianDigits(formatJalali(date, 'MMMM yyyy'));
 };
 
 export const getJalaliMonthRange = (year: number, month: number) => {

@@ -1,10 +1,12 @@
+import { toPersianDigits } from '@/lib/locale/persian-digits';
+
 /** Store money as integer in smallest currency unit (e.g. rials/toman base). */
 export const toMinorUnits = (amount: number): number => Math.round(amount);
 
 export const fromMinorUnits = (amount: number | bigint): number => Number(amount);
 
 export const formatMoney = (amount: number | bigint, locale = 'fa-IR'): string => {
-	return fromMinorUnits(amount).toLocaleString(locale);
+	return toPersianDigits(fromMinorUnits(amount).toLocaleString(locale));
 };
 
 export const parseMoneyInput = (value: string): number | null => {

@@ -1,3 +1,5 @@
+import { toPersianDigits } from '@/lib/locale/persian-digits';
+
 const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
 const ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
@@ -65,10 +67,7 @@ export function formatHoursAsDuration(hours: number): string {
 }
 
 export function formatHoursAsDurationFa(hours: number): string {
-	const duration = formatHoursAsDuration(hours);
-	const [h, m] = duration.split(':');
-
-	return `${Number(h).toLocaleString('fa-IR')}:${Number(m).toLocaleString('fa-IR', { minimumIntegerDigits: 2 })}`;
+	return toPersianDigits(formatHoursAsDuration(hours));
 }
 
 export function isValidDuration(value: string, maxHours = 24): boolean {

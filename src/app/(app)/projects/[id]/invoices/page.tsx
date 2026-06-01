@@ -36,17 +36,11 @@ export default async function ProjectInvoicesPage({ params }: IProjectInvoicesPa
 	const invoices = await getProjectInvoices(project.id);
 
 	return (
-		<div className='space-y-6'>
-			<div className='flex flex-wrap items-center justify-between gap-3'>
-				<div>
-					<Link href={ROUTES.project(project.id)} className='text-sm text-blue-600 hover:underline'>
-						← بازگشت به پروژه
-					</Link>
-					<h1 className='mt-2 text-2xl font-black text-slate-900'>فاکتورهای {project.name}</h1>
-				</div>
+		<div className='space-y-5'>
+			<div className='flex justify-end'>
 				<Link
 					href={ROUTES.invoicePreview(project.id)}
-					className='text-sm text-slate-500 hover:text-slate-800'
+					className='text-sm font-bold text-muted-foreground transition-colors hover:text-foreground'
 				>
 					نمایش دمو قدیمی
 				</Link>

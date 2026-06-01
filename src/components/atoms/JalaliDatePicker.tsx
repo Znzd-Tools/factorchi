@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/atoms/Button';
 import { IosWheelColumn } from '@/components/atoms/IosWheelColumn';
 import { formatJalaliDate } from '@/lib/jalali';
+import { toPersianDigits } from '@/lib/locale/persian-digits';
 import {
 	JALALI_MONTHS,
 	buildDayRange,
@@ -110,6 +111,7 @@ export function JalaliDatePicker({
 								items={days}
 								value={draft.day}
 								onChange={(day) => updateDraft({ day })}
+								formatItem={(day) => toPersianDigits(day)}
 							/>
 							<IosWheelColumn
 								label='ماه'
@@ -123,7 +125,7 @@ export function JalaliDatePicker({
 								items={years}
 								value={draft.year}
 								onChange={(year) => updateDraft({ year })}
-								formatItem={(year) => year.toLocaleString('fa-IR')}
+								formatItem={(year) => toPersianDigits(year)}
 							/>
 						</div>
 

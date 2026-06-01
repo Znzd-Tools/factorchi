@@ -140,7 +140,7 @@ export function PaymentMethodForm({
 					/>
 					<Input
 						label='شماره شبا'
-						placeholder='IR...'
+						placeholder='مثال: IR120170000000000000000'
 						dir='ltr'
 						className='text-left tabular-nums'
 						error={bankDetailsErrors?.shebaNumber?.message ?? detailsRootError}
@@ -175,7 +175,7 @@ export function PaymentMethodForm({
 						/>
 					</div>
 					<Input
-						label='آدرس ولت'
+						label='آدرس کیف پول'
 						dir='ltr'
 						className='text-left'
 						error={cryptoDetailsErrors?.address?.message}

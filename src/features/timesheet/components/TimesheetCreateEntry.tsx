@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/atoms/Button';
+import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { TimeEntryForm } from '@/features/timesheet/components/TimeEntryForm';
 import { getDefaultWorkDateForMonth } from '@/features/timesheet/utils/month-params';
 
@@ -19,8 +20,14 @@ export function TimesheetCreateEntry({ projectId, year, month }: ITimesheetCreat
 
 	return (
 		<>
-			<div className='mb-4 flex justify-end'>
-				<Button type='button' size='sm' onClick={() => setOpen(true)}>
+			<FloatingActionButton
+				icon={Plus}
+				label='ثبت ساعت'
+				onClick={() => setOpen(true)}
+				className='md:hidden'
+			/>
+			<div className='mb-4 hidden justify-end md:flex'>
+				<Button type='button' onClick={() => setOpen(true)} haptic='medium'>
 					<Plus size={16} />
 					ثبت ساعت
 				</Button>
