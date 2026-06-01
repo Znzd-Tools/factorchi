@@ -6,6 +6,7 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 	type ReactNode,
 } from 'react';
@@ -68,7 +69,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 	);
 	const [now, setNow] = useState(() => Date.now());
 	const [stopDraft, setStopDraft] = useState<IFocusTimerStopDraft | null>(null);
-	const [lastPomodoroCount, setLastPomodoroCount] = useState(0);
+	const lastPomodoroRef = useRef(0);
 
 	const persist = useCallback((next: IPersistedFocusTimer | null) => {
 		setTimer(next);
@@ -93,22 +94,15 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		if (!timer) {
-			setLastPomodoroCount(0);
+			lastPomodoroRef.current = 0;
 			return;
 		}
 
-		const baseline = getCompletedPomodoros(getElapsedMs(timer, Date.now()));
-		setLastPomodoroCount(baseline);
-	}, [timer?.projectId]);
-
-	useEffect(() => {
-		if (!timer || completedPomodoros <= lastPomodoroCount) {
-			return;
+		if (completedPomodoros > lastPomodoroRef.current) {
+			lastPomodoroRef.current = completedPomodoros;
+			triggerHaptic('success');
 		}
-
-		setLastPomodoroCount(completedPomodoros);
-		triggerHaptic('success');
-	}, [completedPomodoros, lastPomodoroCount, timer]);
+	}, [completedPomodoros, timer]);
 
 	useEffect(() => {
 		if (timer?.status !== 'running') {
@@ -146,7 +140,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 			};
 
 			setStopDraft(null);
-			setLastPomodoroCount(0);
+			lastPomodoroRef.current = 0;
 			persist(next);
 			triggerHaptic('medium');
 		},

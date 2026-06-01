@@ -17,18 +17,18 @@ import { cleanNumber } from '@/features/invoice/utils/number';
 import { formatJalaliDate } from '@/lib/jalali';
 
 const createInitialItems = (): IInvoiceItem[] => [
-	{ id: 1, title: 'شرح خدمت', type: 'hourly', value: '' },
+	{ id: 1, title: '', type: 'hourly', value: '' },
 ];
 
 export const useInvoiceBuilder = () => {
 	const [step, setStep] = useState(1);
 	const [profession, setProfession] = useState<Profession>('freelancer');
-	const [clientName, setClientName] = useState('شرکت / شخص نمونه');
-	const [invoiceNo, setInvoiceNo] = useState('فاک-۱۰۰۱');
+	const [clientName, setClientName] = useState('');
+	const [invoiceNo, setInvoiceNo] = useState('');
 	const [invoiceDate, setInvoiceDate] = useState(() => formatJalaliDate(new Date()));
 	const [period, setPeriod] = useState('');
 	const [currency, setCurrency] = useState<CurrencyCode>('toman');
-	const [hourlyRate, setHourlyRate] = useState<number | ''>(500000);
+	const [hourlyRate, setHourlyRate] = useState<number | ''>('');
 	const [items, setItems] = useState<IInvoiceItem[]>(createInitialItems);
 	const [taxEnabled, setTaxEnabled] = useState(false);
 	const [taxRate, setTaxRate] = useState<number | ''>(9);

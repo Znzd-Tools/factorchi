@@ -3,7 +3,7 @@
 import { Calendar, CreditCard, Printer } from 'lucide-react';
 
 import { Button } from '@/components/atoms/Button';
-import { CURRENCIES, getCurrencyLabel, getCurrencySymbol } from '@/features/invoice/constants/currencies';
+import { getCurrencyLabel, getCurrencySymbol } from '@/features/invoice/constants/currencies';
 import type { InvoiceDetail } from '@/features/invoice/interface/invoice-db.types';
 import type { CurrencyCode } from '@/features/invoice/interface/invoice.types';
 import { formatHoursAsDurationFa } from '@/lib/duration';

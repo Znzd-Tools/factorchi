@@ -77,6 +77,10 @@ html {
 	-webkit-tap-highlight-color: transparent;
 }
 
+html[dir='rtl'] {
+	text-align: start;
+}
+
 body {
 	background: var(--background);
 	color: var(--foreground);

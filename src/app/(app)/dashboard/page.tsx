@@ -91,7 +91,7 @@ export default async function DashboardPage() {
 		.select('full_name, monthly_hours_goal, monthly_paid_goal')
 		.eq('id', user.id)
 		.single();
-	const displayName = profile.data?.full_name?.trim() || 'فریلنسر';
+	const displayName = profile.data?.full_name?.trim() || 'همکار';
 
 	const quickStats = [
 		{

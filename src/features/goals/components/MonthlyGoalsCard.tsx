@@ -1,7 +1,7 @@
 'use client';
 
 import { Target } from 'lucide-react';
-import { useActionState, useEffect, useState } from 'react';
+import { type FormEvent, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/atoms/Button';
@@ -26,8 +26,6 @@ interface IMonthlyGoalsCardProps {
 	currentPaid: number;
 }
 
-const initialState: IGoalsActionState = {};
-
 export function MonthlyGoalsCard({
 	monthLabel,
 	hoursGoal,
@@ -36,23 +34,31 @@ export function MonthlyGoalsCard({
 	currentPaid,
 }: IMonthlyGoalsCardProps) {
 	const [open, setOpen] = useState(false);
-	const [state, formAction, pending] = useActionState(updateMonthlyGoalsAction, initialState);
+	const [pending, startTransition] = useTransition();
 
 	const hoursProgress = computeGoalProgress(currentHours, hoursGoal);
 	const paidProgress = computeGoalProgress(currentPaid, paidGoal);
 	const hasAnyGoal = hoursGoal != null || paidGoal != null;
 
-	useEffect(() => {
-		if (state.error) {
-			toast.error(state.error);
-		}
+	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		const formData = new FormData(event.currentTarget);
 
-		if (state.success) {
-			toast.success(state.success);
-			triggerHaptic('success');
-			setOpen(false);
-		}
-	}, [state.error, state.success]);
+		startTransition(async () => {
+			const result: IGoalsActionState = await updateMonthlyGoalsAction({}, formData);
+
+			if (result.error) {
+				toast.error(result.error);
+				return;
+			}
+
+			if (result.success) {
+				toast.success(result.success);
+				triggerHaptic('success');
+				setOpen(false);
+			}
+		});
+	};
 
 	return (
 		<>
@@ -107,7 +113,7 @@ export function MonthlyGoalsCard({
 			</section>
 
 			<Modal open={open} onClose={() => setOpen(false)} title='هدف ماهانه'>
-				<form action={formAction} className='space-y-4'>
+				<form onSubmit={handleSubmit} className='space-y-4'>
 					<p className='text-sm text-muted-foreground'>
 						هدف برای ماه جاری ({monthLabel}). خالی بذار = بدون هدف.
 					</p>

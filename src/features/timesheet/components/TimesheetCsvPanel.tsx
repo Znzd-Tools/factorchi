@@ -112,7 +112,7 @@ export function TimesheetCsvPanel({
 	return (
 		<Card
 			title='ورود و خروج CSV'
-			description='بازه دلخواه برای export · import با همان قالب'
+			description='بازه دلخواه برای خروجی و بارگذاری با همان قالب'
 			className='no-print'
 		>
 			<div className='space-y-5'>

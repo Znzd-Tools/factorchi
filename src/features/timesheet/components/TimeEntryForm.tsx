@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { type FormEvent, useState, useTransition } from 'react';
 
 import { toast } from 'sonner';
 
@@ -33,17 +33,27 @@ interface ITimeEntryFormProps {
 	onSaved?: () => void;
 }
 
-export function TimeEntryForm({
-	open,
-	onClose,
+interface ITimeEntryFormFieldsProps {
+	projectId: string;
+	defaultWorkDate: string;
+	entry?: TimeEntry | null;
+	openTodos: ITimeEntryTodoOption[];
+	initialDescription: string;
+	initialHours?: number;
+	onClose: () => void;
+	onSaved?: () => void;
+}
+
+function TimeEntryFormFields({
 	projectId,
 	defaultWorkDate,
 	entry,
-	openTodos = [],
-	initialDescription = '',
+	openTodos,
+	initialDescription,
 	initialHours,
+	onClose,
 	onSaved,
-}: ITimeEntryFormProps) {
+}: ITimeEntryFormFieldsProps) {
 	const router = useRouter();
 	const { trigger: triggerCelebration } = useCelebration();
 	const [pending, startTransition] = useTransition();
@@ -53,23 +63,12 @@ export function TimeEntryForm({
 	const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
 	const isEditing = Boolean(entry);
 
-	useEffect(() => {
-		if (!open || isEditing) {
-			return;
-		}
-
-		setWorkDate(defaultWorkDate);
-		setHours(initialHours ?? '');
-		setDescription(initialDescription);
-		setSelectedTodoId(null);
-	}, [open, defaultWorkDate, initialDescription, initialHours, isEditing]);
-
 	const handleTodoSelect = (todo: ITimeEntryTodoOption | null) => {
 		setSelectedTodoId(todo?.id ?? null);
 		setDescription(todo?.title ?? '');
 	};
 
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		const trimmedDescription = description.trim() || null;
 
@@ -116,44 +115,76 @@ export function TimeEntryForm({
 	};
 
 	return (
+		<form onSubmit={handleSubmit} className='space-y-4'>
+			<JalaliDatePicker label='تاریخ' value={workDate} onChange={setWorkDate} />
+
+			<DurationInput label='مدت زمان (ساعت:دقیقه)' value={hours} onChange={setHours} />
+
+			{!isEditing && openTodos.length > 0 && (
+				<TimeEntryTodoPicker
+					todos={openTodos}
+					selectedId={selectedTodoId}
+					onSelect={handleTodoSelect}
+				/>
+			)}
+
+			<Input
+				label='توضیحات (اختیاری)'
+				name='description'
+				value={description}
+				onChange={(event) => {
+					setDescription(event.target.value);
+					setSelectedTodoId(null);
+				}}
+				placeholder='شرح کار انجام‌شده'
+			/>
+
+			<div className='flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end'>
+				<Button type='button' variant='secondary' onClick={onClose} disabled={pending}>
+					انصراف
+				</Button>
+				<Button type='submit' disabled={pending}>
+					{pending ? 'در حال ذخیره…' : isEditing ? 'ذخیره' : 'ثبت'}
+				</Button>
+			</div>
+		</form>
+	);
+}
+
+export function TimeEntryForm({
+	open,
+	onClose,
+	projectId,
+	defaultWorkDate,
+	entry,
+	openTodos = [],
+	initialDescription = '',
+	initialHours,
+	onSaved,
+}: ITimeEntryFormProps) {
+	const formKey = entry
+		? `edit-${entry.id}`
+		: `new-${defaultWorkDate}-${initialDescription}-${initialHours ?? ''}`;
+
+	return (
 		<Modal
 			open={open}
 			onClose={onClose}
-			title={isEditing ? 'ویرایش ساعت کار' : 'ثبت ساعت کار'}
+			title={entry ? 'ویرایش ساعت کار' : 'ثبت ساعت کار'}
 		>
-			<form key={entry?.id ?? `${defaultWorkDate}-${initialDescription}`} onSubmit={handleSubmit} className='space-y-4'>
-				<JalaliDatePicker label='تاریخ' value={workDate} onChange={setWorkDate} />
-
-				<DurationInput label='مدت زمان (ساعت:دقیقه)' value={hours} onChange={setHours} />
-
-				{!isEditing && openTodos.length > 0 && (
-					<TimeEntryTodoPicker
-						todos={openTodos}
-						selectedId={selectedTodoId}
-						onSelect={handleTodoSelect}
-					/>
-				)}
-
-				<Input
-					label='توضیحات (اختیاری)'
-					name='description'
-					value={description}
-					onChange={(event) => {
-						setDescription(event.target.value);
-						setSelectedTodoId(null);
-					}}
-					placeholder='شرح کار انجام‌شده'
+			{open && (
+				<TimeEntryFormFields
+					key={formKey}
+					projectId={projectId}
+					defaultWorkDate={defaultWorkDate}
+					entry={entry}
+					openTodos={openTodos}
+					initialDescription={initialDescription}
+					initialHours={initialHours}
+					onClose={onClose}
+					onSaved={onSaved}
 				/>
-
-				<div className='flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end'>
-					<Button type='button' variant='secondary' onClick={onClose} disabled={pending}>
-						انصراف
-					</Button>
-					<Button type='submit' disabled={pending}>
-						{pending ? 'در حال ذخیره…' : isEditing ? 'ذخیره' : 'ثبت'}
-					</Button>
-				</div>
-			</form>
+			)}
 		</Modal>
 	);
 }

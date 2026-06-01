@@ -158,9 +158,9 @@ export function PaymentMethodsList({ paymentMethods }: IPaymentMethodsListProps)
 							<div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
 								<div className='space-y-2'>
 									<div className='flex flex-wrap items-center gap-2'>
-										<CreditCard size={18} className='text-slate-400' />
-										<h3 className='font-bold text-slate-800'>{method.label}</h3>
-										<span className='rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600'>
+										<CreditCard size={18} className='text-muted-foreground' />
+										<h3 className='font-bold text-foreground'>{method.label}</h3>
+										<span className='rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground'>
 											{method.type === 'bank' ? 'بانکی' : 'کریپتو'}
 										</span>
 										{method.is_default && (
@@ -170,7 +170,7 @@ export function PaymentMethodsList({ paymentMethods }: IPaymentMethodsListProps)
 											</span>
 										)}
 									</div>
-									<p className='text-sm text-slate-500' dir='ltr'>
+									<p className='text-sm text-muted-foreground' dir='ltr'>
 										{getMethodSummary(method)}
 									</p>
 								</div>
@@ -238,7 +238,7 @@ export function PaymentMethodsList({ paymentMethods }: IPaymentMethodsListProps)
 				title='حذف روش پرداخت'
 			>
 				<div className='space-y-4'>
-					<p className='text-sm text-slate-600'>
+					<p className='text-sm text-muted-foreground'>
 						آیا از حذف «{deletingMethod?.label}» مطمئن هستید؟
 					</p>
 					<div className='flex justify-end gap-2'>

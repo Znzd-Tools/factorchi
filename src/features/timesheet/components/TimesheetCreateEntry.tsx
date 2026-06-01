@@ -36,7 +36,6 @@ export function TimesheetCreateEntry({ projectId, year, month, openTodos }: ITim
 			</div>
 
 			<TimeEntryForm
-				key={`new-${year}-${month}`}
 				open={open}
 				onClose={() => setOpen(false)}
 				projectId={projectId}

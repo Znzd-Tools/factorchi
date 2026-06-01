@@ -35,7 +35,7 @@ export function serializeTimesheetCsv(rows: string[][]): string {
 export function buildTimesheetTemplateCsv(): string {
 	return serializeTimesheetCsv([
 		[...TIMESHEET_CSV_HEADERS],
-		['2026-06-01', '2:30', 'نمونه: پیاده‌سازی فیچر'],
+		['2026-06-01', '2:30', 'طراحی رابط کاربری'],
 		['2026-06-02', '1.5', ''],
 	]);
 }
