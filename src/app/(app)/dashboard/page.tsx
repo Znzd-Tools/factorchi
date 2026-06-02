@@ -23,6 +23,7 @@ import {
 import { StreakCard } from '@/features/engagement/components/StreakCard';
 import { MonthlyGoalsCard } from '@/features/goals/components/MonthlyGoalsCard';
 import { DashboardFocusTimerCtas } from '@/features/focus-timer/components/DashboardFocusTimerCtas';
+import { normalizePomodoroMinutes } from '@/features/focus-timer/constants';
 import { QuickLogTeaser } from '@/features/timesheet/components/QuickLogTeaser';
 import { WrappedTeaser } from '@/features/engagement/components/WrappedTeaser';
 import { computeMonthlyWrapped } from '@/features/engagement/utils/monthly-wrapped';
@@ -50,7 +51,7 @@ export default async function DashboardPage() {
 		supabase.from('time_entries').select('project_id, hours, work_date').eq('user_id', user.id),
 		supabase
 			.from('invoices')
-			.select('project_id, status, total, issue_date')
+			.select('project_id, status, total, issue_date, period_end')
 			.eq('user_id', user.id),
 		supabase
 			.from('projects')
@@ -170,7 +171,7 @@ export default async function DashboardPage() {
 				projects={(hourlyProjects ?? []).map((project) => ({
 					id: project.id,
 					name: project.name,
-					pomodoroMinutes: project.pomodoro_minutes ?? 25,
+					pomodoroMinutes: normalizePomodoroMinutes(project.pomodoro_minutes),
 				}))}
 			/>
 

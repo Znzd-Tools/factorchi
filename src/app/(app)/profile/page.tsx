@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { ROUTES } from '@/config/routes';
 import { FeedbackSettingsCard } from '@/features/profile/components/FeedbackSettingsCard';
 import { ProfileForm } from '@/features/profile/components/ProfileForm';
+import { ensureUserProfile } from '@/lib/auth/ensure-user-profile';
 import { requireUser } from '@/lib/auth/require-user';
 import { createClient } from '@/lib/supabase/server';
 
@@ -14,11 +15,9 @@ export default async function ProfilePage() {
 	const user = await requireUser();
 	const supabase = await createClient();
 
-	const { data: profile } = await supabase
-		.from('profiles')
-		.select('full_name, default_currency')
-		.eq('id', user.id)
-		.single();
+	const profile = await ensureUserProfile(supabase, user.id, {
+		fullName: user.user_metadata?.full_name ?? '',
+	});
 
 	return (
 		<div className='space-y-6 pb-2'>

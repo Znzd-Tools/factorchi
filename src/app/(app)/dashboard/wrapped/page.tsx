@@ -21,7 +21,7 @@ export default async function MonthlyWrappedPage({ searchParams }: IMonthlyWrapp
 		supabase.from('time_entries').select('project_id, hours, work_date').eq('user_id', user.id),
 		supabase
 			.from('invoices')
-			.select('project_id, status, total, issue_date')
+			.select('project_id, status, total, issue_date, period_end')
 			.eq('user_id', user.id),
 	]);
 

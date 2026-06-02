@@ -7,10 +7,12 @@ const HAPTICS_KEY = 'factorchi-feedback-haptics';
 const SOUNDS_KEY = 'factorchi-feedback-sounds';
 const CHANGE_EVENT = 'factorchi-feedback-change';
 
-const DEFAULT_PREFERENCES: FeedbackPreferences = {
+export const DEFAULT_FEEDBACK_PREFERENCES: FeedbackPreferences = {
 	hapticsEnabled: true,
 	soundsEnabled: true,
 };
+
+let cachedSnapshot: FeedbackPreferences = DEFAULT_FEEDBACK_PREFERENCES;
 
 function readBoolean(key: string, fallback: boolean): boolean {
 	const stored = localStorage.getItem(key);
@@ -26,15 +28,38 @@ function readBoolean(key: string, fallback: boolean): boolean {
 	return fallback;
 }
 
-export function getFeedbackPreferences(): FeedbackPreferences {
-	if (typeof window === 'undefined') {
-		return DEFAULT_PREFERENCES;
-	}
-
+function readSnapshotFromStorage(): FeedbackPreferences {
 	return {
 		hapticsEnabled: readBoolean(HAPTICS_KEY, true),
 		soundsEnabled: readBoolean(SOUNDS_KEY, true),
 	};
+}
+
+function snapshotsEqual(a: FeedbackPreferences, b: FeedbackPreferences): boolean {
+	return a.hapticsEnabled === b.hapticsEnabled && a.soundsEnabled === b.soundsEnabled;
+}
+
+function refreshCachedSnapshot(): FeedbackPreferences {
+	const next = readSnapshotFromStorage();
+
+	if (snapshotsEqual(next, cachedSnapshot)) {
+		return cachedSnapshot;
+	}
+
+	cachedSnapshot = next;
+	return cachedSnapshot;
+}
+
+export function getFeedbackPreferences(): FeedbackPreferences {
+	if (typeof window === 'undefined') {
+		return DEFAULT_FEEDBACK_PREFERENCES;
+	}
+
+	return refreshCachedSnapshot();
+}
+
+export function getServerFeedbackPreferences(): FeedbackPreferences {
+	return DEFAULT_FEEDBACK_PREFERENCES;
 }
 
 export function setFeedbackPreferences(patch: Partial<FeedbackPreferences>): FeedbackPreferences {
@@ -46,13 +71,17 @@ export function setFeedbackPreferences(patch: Partial<FeedbackPreferences>): Fee
 
 	localStorage.setItem(HAPTICS_KEY, next.hapticsEnabled ? '1' : '0');
 	localStorage.setItem(SOUNDS_KEY, next.soundsEnabled ? '1' : '0');
+	cachedSnapshot = next;
 	window.dispatchEvent(new Event(CHANGE_EVENT));
 
 	return next;
 }
 
 export function subscribeFeedbackPreferences(onStoreChange: () => void): () => void {
-	const handler = () => onStoreChange();
+	const handler = () => {
+		refreshCachedSnapshot();
+		onStoreChange();
+	};
 
 	window.addEventListener(CHANGE_EVENT, handler);
 	window.addEventListener('storage', handler);

@@ -23,10 +23,17 @@ export interface IMonthlyWrappedStats {
 }
 
 type TimeEntrySlice = Pick<TimeEntry, 'project_id' | 'hours' | 'work_date'>;
-type InvoiceSlice = Pick<Invoice, 'project_id' | 'status' | 'total' | 'issue_date'>;
+type InvoiceSlice = Pick<Invoice, 'project_id' | 'status' | 'total' | 'issue_date' | 'period_end'>;
 
 function isInMonth(isoDate: string, startIso: string, endIso: string): boolean {
 	return isoDate >= startIso && isoDate <= endIso;
+}
+
+/** Month bucket for invoice stats/goals: billing period end, else issue date. */
+export function getInvoiceAttributionDate(
+	invoice: Pick<Invoice, 'period_end' | 'issue_date'>,
+): string {
+	return invoice.period_end ?? invoice.issue_date;
 }
 
 function buildHeadline(
@@ -87,7 +94,9 @@ export function computeMonthlyWrapped(
 
 	const monthlyEntries = timeEntries.filter((entry) => isInMonth(entry.work_date, startIso, endIso));
 	const monthlyInvoices = invoices.filter(
-		(invoice) => invoice.status !== 'canceled' && isInMonth(invoice.issue_date, startIso, endIso),
+		(invoice) =>
+			invoice.status !== 'canceled' &&
+			isInMonth(getInvoiceAttributionDate(invoice), startIso, endIso),
 	);
 
 	const totalHours = monthlyEntries.reduce((sum, entry) => sum + Number(entry.hours), 0);

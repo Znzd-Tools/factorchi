@@ -50,9 +50,27 @@ interface IFocusTimerContextValue {
 	dismissStop: () => void;
 	discardSession: () => void;
 	updateStopHours: (hours: number) => void;
+	syncPomodoroMinutes: (projectId: string, minutes: number) => void;
 }
 
 const FocusTimerContext = createContext<IFocusTimerContextValue | null>(null);
+
+function getInitialLastPomodoroCount(): number {
+	if (typeof window === 'undefined') {
+		return 0;
+	}
+
+	const stored = hydrateTimer();
+
+	if (!stored) {
+		return 0;
+	}
+
+	return getCompletedPomodoros(
+		getElapsedMs(stored, Date.now()),
+		normalizePomodoroMinutes(stored.pomodoroMinutes),
+	);
+}
 
 function hydrateTimer(): IPersistedFocusTimer | null {
 	const stored = readPersistedTimer();
@@ -90,7 +108,8 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 	const [now, setNow] = useState(() => Date.now());
 	const [stopDraft, setStopDraft] = useState<IFocusTimerStopDraft | null>(null);
 	const [onPomodoroBreak, setOnPomodoroBreak] = useState(false);
-	const lastPomodoroRef = useRef(0);
+	const lastPomodoroRef = useRef(getInitialLastPomodoroCount());
+	const prevPomodoroMinutesRef = useRef<number | null>(null);
 	const timerRef = useRef<IPersistedFocusTimer | null>(timer);
 
 	useEffect(() => {
@@ -131,6 +150,19 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 		});
 		setOnPomodoroBreak(true);
 	}, []);
+
+	useEffect(() => {
+		if (!timer) {
+			lastPomodoroRef.current = 0;
+			prevPomodoroMinutesRef.current = null;
+			return;
+		}
+
+		if (prevPomodoroMinutesRef.current !== pomodoroMinutes) {
+			prevPomodoroMinutesRef.current = pomodoroMinutes;
+			lastPomodoroRef.current = completedPomodoros;
+		}
+	}, [timer, pomodoroMinutes, completedPomodoros]);
 
 	useEffect(() => {
 		if (!timer) {
@@ -289,6 +321,24 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 		setStopDraft((draft) => (draft ? { ...draft, hours } : draft));
 	}, []);
 
+	const syncPomodoroMinutes = useCallback((projectId: string, minutes: number) => {
+		const normalized = normalizePomodoroMinutes(minutes);
+
+		setTimer((current) => {
+			if (!current || current.projectId !== projectId || current.pomodoroMinutes === normalized) {
+				return current;
+			}
+
+			const next: IPersistedFocusTimer = {
+				...current,
+				pomodoroMinutes: normalized,
+			};
+
+			writePersistedTimer(next);
+			return next;
+		});
+	}, []);
+
 	const value = useMemo(
 		() => ({
 			timer,
@@ -307,6 +357,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 			dismissStop,
 			discardSession,
 			updateStopHours,
+			syncPomodoroMinutes,
 		}),
 		[
 			timer,
@@ -324,6 +375,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 			dismissStop,
 			discardSession,
 			updateStopHours,
+			syncPomodoroMinutes,
 		],
 	);
 

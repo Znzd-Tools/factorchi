@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react';
 
 import {
 	getFeedbackPreferences,
+	getServerFeedbackPreferences,
 	setFeedbackPreferences,
 	subscribeFeedbackPreferences,
 	type FeedbackPreferences,
@@ -16,7 +17,7 @@ export function useFeedbackPreferences(): FeedbackPreferences & {
 	const preferences = useSyncExternalStore(
 		subscribeFeedbackPreferences,
 		getFeedbackPreferences,
-		() => ({ hapticsEnabled: true, soundsEnabled: true }),
+		getServerFeedbackPreferences,
 	);
 
 	return {

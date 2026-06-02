@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Pause, Play, Square, Timer, X } from 'lucide-react';
+import { useEffect } from 'react';
 
 import { Button } from '@/components/atoms/Button';
 import { ROUTES } from '@/config/routes';
@@ -40,7 +41,12 @@ export function FocusTimerPanel({
 		resume,
 		requestStop,
 		cancelSession,
+		syncPomodoroMinutes,
 	} = useFocusTimer();
+
+	useEffect(() => {
+		syncPomodoroMinutes(projectId, pomodoroMinutes);
+	}, [projectId, pomodoroMinutes, syncPomodoroMinutes]);
 
 	const displayMinutes = timer?.projectId === projectId ? activePomodoroMinutes : pomodoroMinutes;
 	const isThisProject = timer?.projectId === projectId;

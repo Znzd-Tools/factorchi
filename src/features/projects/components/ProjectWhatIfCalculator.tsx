@@ -17,7 +17,7 @@ interface IProjectWhatIfCalculatorProps {
 	maxExtraHours?: number;
 }
 
-const DEFAULT_MAX_EXTRA = 40;
+const DEFAULT_MAX_EXTRA = 170;
 
 export function ProjectWhatIfCalculator({
 	monthlyHours,

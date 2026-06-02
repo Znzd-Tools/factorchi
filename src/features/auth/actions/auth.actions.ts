@@ -84,10 +84,11 @@ export async function updateProfileAction(
 		return { error: 'لطفاً وارد شوید.' };
 	}
 
-	const { error } = await supabase
-		.from('profiles')
-		.update({ full_name: fullName, default_currency: defaultCurrency })
-		.eq('id', user.id);
+	const { error } = await supabase.from('profiles').upsert({
+		id: user.id,
+		full_name: fullName,
+		default_currency: defaultCurrency,
+	});
 
 	if (error) {
 		return { error: error.message };
