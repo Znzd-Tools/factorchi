@@ -1,19 +1,7 @@
-import { toPersianDigits } from '@/lib/locale/persian-digits';
-
-const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-const ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+import { normalizeAsciiDigits, toPersianDigits } from '@/lib/locale/persian-digits';
 
 export function normalizeDurationDigits(value: string): string {
-	let result = value;
-
-	for (let index = 0; index < 10; index += 1) {
-		result = result.replaceAll(PERSIAN_DIGITS[index], String(index)).replaceAll(
-			ARABIC_DIGITS[index],
-			String(index),
-		);
-	}
-
-	return result.replace(/[^\d:]/g, '');
+	return normalizeAsciiDigits(value).replace(/[^\d:]/g, '');
 }
 
 /** Formats raw digits while typing into HH:MM shape. */

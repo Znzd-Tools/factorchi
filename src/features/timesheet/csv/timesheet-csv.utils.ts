@@ -1,4 +1,5 @@
-import { normalizeDurationDigits, parseDurationToHours } from '@/lib/duration';
+import { parseDurationToHours } from '@/lib/duration';
+import { normalizeAsciiDigits } from '@/lib/locale/persian-digits';
 
 import {
 	TIMESHEET_CSV_HEADER_ALIASES,
@@ -130,7 +131,7 @@ export function parseTimesheetCsv(content: string): {
 			continue;
 		}
 
-		const normalizedDate = normalizeDurationDigits(workDate.trim());
+		const normalizedDate = normalizeAsciiDigits(workDate.trim());
 		const dateMatch = normalizedDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
 		if (!dateMatch) {
