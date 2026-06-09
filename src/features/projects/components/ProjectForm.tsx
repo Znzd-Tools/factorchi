@@ -22,7 +22,6 @@ import {
 	projectFormDefaults,
 	projectFormSchema,
 } from '@/features/projects/schemas/project.schema';
-import { parsePomodoroMinutesInput } from '@/features/focus-timer/constants';
 import { parseMoneyInput } from '@/lib/money';
 
 interface IProjectFormProps {
@@ -123,45 +122,20 @@ export function ProjectForm({ mode, projectId, defaultValues }: IProjectFormProp
 			</Select>
 
 			{projectType === 'hourly' ? (
-				<>
-					<Input
-						label='نرخ ساعتی'
-						inputMode='decimal'
-						dir='ltr'
-						error={errors.hourly_rate?.message}
-						onChange={(event) => {
-							setValue('hourly_rate', parseMoneyInput(event.target.value), {
-								shouldValidate: true,
-							});
-						}}
-						defaultValue={
-							defaultValues?.hourly_rate != null ? String(defaultValues.hourly_rate) : ''
-						}
-					/>
-					<Input
-						label='مدت هر پومودورو (دقیقه)'
-						type='number'
-						inputMode='numeric'
-						min={5}
-						max={120}
-						dir='ltr'
-						error={errors.pomodoro_minutes?.message}
-						defaultValue={
-							defaultValues?.pomodoro_minutes != null
-								? String(defaultValues.pomodoro_minutes)
-								: String(projectFormDefaults.pomodoro_minutes)
-						}
-						onChange={(event) => {
-							const parsed = parsePomodoroMinutesInput(event.target.value);
-							setValue('pomodoro_minutes', parsed ?? Number.NaN, {
-								shouldValidate: true,
-							});
-						}}
-					/>
-					<p className='-mt-2 text-xs text-muted-foreground'>
-						بعد از هر پومودورو تایمر متوقف می‌شود تا استراحت کنی؛ «ادامه» راند بعدی را شروع می‌کند.
-					</p>
-				</>
+				<Input
+					label='نرخ ساعتی'
+					inputMode='decimal'
+					dir='ltr'
+					error={errors.hourly_rate?.message}
+					onChange={(event) => {
+						setValue('hourly_rate', parseMoneyInput(event.target.value), {
+							shouldValidate: true,
+						});
+					}}
+					defaultValue={
+						defaultValues?.hourly_rate != null ? String(defaultValues.hourly_rate) : ''
+					}
+				/>
 			) : (
 				<Input
 					label='مبلغ کل پروژه'

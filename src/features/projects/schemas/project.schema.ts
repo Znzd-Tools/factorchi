@@ -1,11 +1,5 @@
 import { z } from 'zod';
 
-import {
-	DEFAULT_POMODORO_MINUTES,
-	MAX_POMODORO_MINUTES,
-	MIN_POMODORO_MINUTES,
-} from '@/features/focus-timer/constants';
-
 const projectTypeSchema = z.enum(['hourly', 'total']);
 
 export const projectFormSchema = z
@@ -18,11 +12,6 @@ export const projectFormSchema = z
 		hourly_rate: z.number().positive('نرخ ساعتی باید بزرگ‌تر از صفر باشد.').nullable().optional(),
 		total_amount: z.number().positive('مبلغ کل باید بزرگ‌تر از صفر باشد.').nullable().optional(),
 		notes: z.string().trim().optional(),
-		pomodoro_minutes: z
-			.number({ error: 'مدت پومودورو الزامی است.' })
-			.int('مدت پومودورو باید عدد صحیح باشد.')
-			.min(MIN_POMODORO_MINUTES, `حداقل ${MIN_POMODORO_MINUTES} دقیقه`)
-			.max(MAX_POMODORO_MINUTES, `حداکثر ${MAX_POMODORO_MINUTES} دقیقه`),
 	})
 	.superRefine((data, ctx) => {
 		if (data.type === 'hourly') {
@@ -56,5 +45,4 @@ export const projectFormDefaults: ProjectFormValues = {
 	hourly_rate: null,
 	total_amount: null,
 	notes: '',
-	pomodoro_minutes: DEFAULT_POMODORO_MINUTES,
 };

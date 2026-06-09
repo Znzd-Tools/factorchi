@@ -16,7 +16,7 @@ export interface Database {
 					full_name: string | null;
 					default_currency: string;
 					monthly_hours_goal: number | null;
-					monthly_paid_goal: number | null;
+					monthly_income_goal: number | null;
 					created_at: string;
 					updated_at: string;
 				};
@@ -25,7 +25,7 @@ export interface Database {
 					full_name?: string | null;
 					default_currency?: string;
 					monthly_hours_goal?: number | null;
-					monthly_paid_goal?: number | null;
+					monthly_income_goal?: number | null;
 					created_at?: string;
 					updated_at?: string;
 				};
@@ -34,7 +34,7 @@ export interface Database {
 					full_name?: string | null;
 					default_currency?: string;
 					monthly_hours_goal?: number | null;
-					monthly_paid_goal?: number | null;
+					monthly_income_goal?: number | null;
 					created_at?: string;
 					updated_at?: string;
 				};
@@ -86,7 +86,6 @@ export interface Database {
 					total_amount: number | null;
 					status: ProjectStatus;
 					notes: string | null;
-					pomodoro_minutes: number;
 					created_at: string;
 					updated_at: string;
 				};
@@ -102,7 +101,6 @@ export interface Database {
 					total_amount?: number | null;
 					status?: ProjectStatus;
 					notes?: string | null;
-					pomodoro_minutes?: number;
 					created_at?: string;
 					updated_at?: string;
 				};
@@ -118,7 +116,6 @@ export interface Database {
 					total_amount?: number | null;
 					status?: ProjectStatus;
 					notes?: string | null;
-					pomodoro_minutes?: number;
 					created_at?: string;
 					updated_at?: string;
 				};

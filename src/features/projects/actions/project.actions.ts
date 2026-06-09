@@ -25,7 +25,6 @@ function toProjectFields(values: ProjectFormValues) {
 		notes: values.notes?.trim() || null,
 		hourly_rate: values.type === 'hourly' ? (values.hourly_rate ?? null) : null,
 		total_amount: values.type === 'total' ? (values.total_amount ?? null) : null,
-		pomodoro_minutes: values.pomodoro_minutes,
 	};
 }
 
