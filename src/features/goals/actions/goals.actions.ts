@@ -18,7 +18,7 @@ export async function updateMonthlyGoalsAction(
 ): Promise<IGoalsActionState> {
 	const parsed = monthlyGoalsSchema.safeParse({
 		hoursGoal: formData.get('hoursGoal'),
-		paidGoal: formData.get('paidGoal'),
+		incomeGoal: formData.get('incomeGoal'),
 	});
 
 	if (!parsed.success) {
@@ -32,7 +32,7 @@ export async function updateMonthlyGoalsAction(
 		.from('profiles')
 		.update({
 			monthly_hours_goal: parsed.data.hoursGoal,
-			monthly_paid_goal: parsed.data.paidGoal,
+			monthly_income_goal: parsed.data.incomeGoal,
 			updated_at: new Date().toISOString(),
 		})
 		.eq('id', user.id);

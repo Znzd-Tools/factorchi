@@ -18,7 +18,10 @@ export default async function MonthlyWrappedPage({ searchParams }: IMonthlyWrapp
 
 	const [{ data: projects }, { data: timeEntries }, { data: invoices }] = await Promise.all([
 		supabase.from('projects').select('id, name').eq('user_id', user.id),
-		supabase.from('time_entries').select('project_id, hours, work_date').eq('user_id', user.id),
+		supabase
+			.from('time_entries')
+			.select('project_id, hours, work_date, rate_at_entry')
+			.eq('user_id', user.id),
 		supabase
 			.from('invoices')
 			.select('project_id, status, total, issue_date, period_end')

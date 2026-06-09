@@ -21,24 +21,24 @@ import { triggerHaptic } from '@/lib/haptics';
 interface IMonthlyGoalsCardProps {
 	monthLabel: string;
 	hoursGoal: number | null;
-	paidGoal: number | null;
+	incomeGoal: number | null;
 	currentHours: number;
-	currentPaid: number;
+	currentIncome: number;
 }
 
 export function MonthlyGoalsCard({
 	monthLabel,
 	hoursGoal,
-	paidGoal,
+	incomeGoal,
 	currentHours,
-	currentPaid,
+	currentIncome,
 }: IMonthlyGoalsCardProps) {
 	const [open, setOpen] = useState(false);
 	const [pending, startTransition] = useTransition();
 
 	const hoursProgress = computeGoalProgress(currentHours, hoursGoal);
-	const paidProgress = computeGoalProgress(currentPaid, paidGoal);
-	const hasAnyGoal = hoursGoal != null || paidGoal != null;
+	const incomeProgress = computeGoalProgress(currentIncome, incomeGoal);
+	const hasAnyGoal = hoursGoal != null || incomeGoal != null;
 
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -90,22 +90,22 @@ export function MonthlyGoalsCard({
 								subLabel={`${formatHoursAsDurationFa(hoursProgress.current)} / ${formatHoursAsDurationFa(hoursProgress.target)}`}
 							/>
 						)}
-						{paidProgress && (
+						{incomeProgress && (
 							<ProgressRing
-								percent={paidProgress.percent}
-								complete={paidProgress.complete}
-								label='دریافتی'
-								subLabel={`${formatMoney(paidProgress.current)} / ${formatMoney(paidProgress.target)}`}
+								percent={incomeProgress.percent}
+								complete={incomeProgress.complete}
+								label='درآمد'
+								subLabel={`${formatMoney(incomeProgress.current)} / ${formatMoney(incomeProgress.target)}`}
 							/>
 						)}
 					</div>
 				) : (
 					<p className='mt-3 text-sm leading-relaxed text-muted-foreground'>
-						مثلاً {toFaNumber(80)} ساعت کار یا {formatMoney(50_000_000)} دریافتی — هر چیزی که برات معنی‌دار باشه.
+						مثلاً {toFaNumber(80)} ساعت کار یا {formatMoney(50_000_000)} درآمد — هر چیزی که برات معنی‌دار باشه.
 					</p>
 				)}
 
-				{hoursProgress?.complete && paidProgress?.complete && (
+				{hoursProgress?.complete && incomeProgress?.complete && (
 					<p className='mt-4 rounded-xl bg-emerald-500/10 px-3 py-2 text-center text-sm font-bold text-emerald-700 dark:text-emerald-300'>
 						هر دو هدف ماه رو زدی — فوق‌العاده‌ای!
 					</p>
@@ -126,12 +126,12 @@ export function MonthlyGoalsCard({
 						defaultValue={hoursGoal != null ? String(hoursGoal) : ''}
 					/>
 					<Input
-						label='هدف دریافتی (تومان)'
-						name='paidGoal'
+						label='هدف درآمد (تومان)'
+						name='incomeGoal'
 						inputMode='numeric'
 						dir='ltr'
 						placeholder='مثلاً 50000000'
-						defaultValue={paidGoal != null ? String(paidGoal) : ''}
+						defaultValue={incomeGoal != null ? String(incomeGoal) : ''}
 					/>
 					<div className='flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end'>
 						<Button type='button' variant='secondary' onClick={() => setOpen(false)} disabled={pending}>

@@ -9,7 +9,7 @@ import { formatMoney } from '@/lib/money';
 interface IWrappedTeaserProps {
 	stats: Pick<
 		IMonthlyWrappedStats,
-		'year' | 'month' | 'monthLabel' | 'headline' | 'totalHours' | 'paidTotal' | 'hasActivity'
+		'year' | 'month' | 'monthLabel' | 'headline' | 'totalHours' | 'incomeTotal' | 'hasActivity'
 	>;
 }
 
@@ -36,7 +36,7 @@ export function WrappedTeaser({ stats }: IWrappedTeaserProps) {
 				<div className='mt-3 flex gap-4 border-t border-border/80 pt-3 text-xs font-bold text-muted-foreground'>
 					<span dir='ltr'>{formatHoursAsDurationFa(stats.totalHours)}</span>
 					<span>·</span>
-					<span>{formatMoney(stats.paidTotal)} دریافت‌شده</span>
+					<span>{formatMoney(stats.incomeTotal)} درآمد</span>
 				</div>
 			)}
 			<p className='mt-2 text-center text-xs font-bold text-primary'>مشاهده خلاصه کامل ←</p>

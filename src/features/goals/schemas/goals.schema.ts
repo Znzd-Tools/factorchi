@@ -13,7 +13,7 @@ export const monthlyGoalsSchema = z.object({
 
 			return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 		}),
-	paidGoal: z
+	incomeGoal: z
 		.string()
 		.optional()
 		.transform((value) => {

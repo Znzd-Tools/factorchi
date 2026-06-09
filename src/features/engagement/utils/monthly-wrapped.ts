@@ -1,3 +1,4 @@
+import { aggregateMonthly } from '@/features/timesheet/utils/aggregate';
 import { formatJalaliDate, formatJalaliMonthLabel, getJalaliMonthRange } from '@/lib/jalali';
 import { toFaNumber } from '@/lib/locale/persian-digits';
 import type { Invoice, TimeEntry } from '@/lib/supabase/database.types';
@@ -14,6 +15,7 @@ export interface IMonthlyWrappedStats {
 	topProject: { name: string; hours: number } | null;
 	busiestDay: { dateIso: string; dateLabel: string; hours: number } | null;
 	invoicesCount: number;
+	incomeTotal: number;
 	paidTotal: number;
 	pendingTotal: number;
 	invoicedTotal: number;
@@ -22,7 +24,7 @@ export interface IMonthlyWrappedStats {
 	subline: string;
 }
 
-type TimeEntrySlice = Pick<TimeEntry, 'project_id' | 'hours' | 'work_date'>;
+type TimeEntrySlice = Pick<TimeEntry, 'project_id' | 'hours' | 'work_date' | 'rate_at_entry'>;
 type InvoiceSlice = Pick<Invoice, 'project_id' | 'status' | 'total' | 'issue_date' | 'period_end'>;
 
 function isInMonth(isoDate: string, startIso: string, endIso: string): boolean {
@@ -100,6 +102,7 @@ export function computeMonthlyWrapped(
 	);
 
 	const totalHours = monthlyEntries.reduce((sum, entry) => sum + Number(entry.hours), 0);
+	const incomeTotal = aggregateMonthly(monthlyEntries).totalAmount;
 	const timeEntryDays = new Set(monthlyEntries.map((entry) => entry.work_date)).size;
 
 	const hoursByProject = new Map<string, number>();
@@ -168,6 +171,7 @@ export function computeMonthlyWrapped(
 		topProject,
 		busiestDay,
 		invoicesCount: monthlyInvoices.length,
+		incomeTotal,
 		paidTotal,
 		pendingTotal,
 		invoicedTotal,

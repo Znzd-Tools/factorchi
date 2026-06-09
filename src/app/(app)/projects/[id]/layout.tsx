@@ -5,11 +5,9 @@ import { FilePlus2 } from 'lucide-react';
 
 import { Button } from '@/components/atoms/Button';
 import { ROUTES } from '@/config/routes';
-import { FocusTimerPanel } from '@/features/focus-timer/components/FocusTimerPanel';
 import { ProjectHealthBadge } from '@/features/projects/components/ProjectHealthBadge';
 import { ProjectTabs } from '@/features/projects/components/ProjectTabs';
 import { buildProjectHealthMap } from '@/features/projects/utils/project-health';
-import { normalizePomodoroMinutes } from '@/features/focus-timer/constants';
 import { getCurrentJalaliMonth, getJalaliMonthRange } from '@/lib/jalali';
 import { requireUser } from '@/lib/auth/require-user';
 import { createClient } from '@/lib/supabase/server';
@@ -70,16 +68,6 @@ export default async function ProjectLayout({ children, params }: IProjectLayout
 					)}
 				</div>
 			</div>
-
-			{project.type === 'hourly' && project.hourly_rate != null && (
-				<div className='no-print'>
-					<FocusTimerPanel
-						projectId={project.id}
-						projectName={project.name}
-						pomodoroMinutes={normalizePomodoroMinutes(project.pomodoro_minutes)}
-					/>
-				</div>
-			)}
 
 			<Suspense fallback={<div className='no-print h-12 animate-pulse rounded-2xl bg-muted' />}>
 				<div className='no-print'>
