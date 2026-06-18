@@ -1,17 +1,25 @@
+import { format } from 'date-fns';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import {
 	CalendarDays,
 	CircleDollarSign,
 	Clock,
+	Scale,
 	TrendingUp,
 	Wallet,
 } from 'lucide-react';
 
 import { Card } from '@/components/atoms/Card';
 import { getCurrencySymbol } from '@/features/invoice/constants/currencies';
+import { getUserPaymentMethods } from '@/features/invoice/actions/invoice.actions';
+import { ProjectPaymentPanel } from '@/features/projects/components/ProjectPaymentPanel';
 import { ProjectWhatIfCalculator } from '@/features/projects/components/ProjectWhatIfCalculator';
-import { computeDashboardStats } from '@/features/projects/utils/dashboard-stats';
+import {
+	computeDashboardStats,
+	getBalanceDescription,
+} from '@/features/projects/utils/dashboard-stats';
+import { listProjectPayments } from '@/features/projects/queries/project-payment.queries';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
 import { aggregateMonthly } from '@/features/timesheet/utils/aggregate';
@@ -53,7 +61,7 @@ export default async function ProjectDashboardPage({
 		notFound();
 	}
 
-	const [{ data: invoices }, { data: timeEntries }] = await Promise.all([
+	const [{ data: invoices }, { data: timeEntries }, payments, paymentMethods] = await Promise.all([
 		supabase.from('invoices').select('status, total, percentage').eq('project_id', project.id),
 		project.type === 'hourly'
 			? supabase
@@ -61,10 +69,18 @@ export default async function ProjectDashboardPage({
 					.select('hours, rate_at_entry')
 					.eq('project_id', project.id)
 			: Promise.resolve({ data: [] as { hours: number; rate_at_entry: number }[] }),
+		listProjectPayments(project.id),
+		getUserPaymentMethods(),
 	]);
 
-	const stats = computeDashboardStats(project, invoices ?? [], timeEntries ?? []);
+	const stats = computeDashboardStats(
+		project,
+		invoices ?? [],
+		timeEntries ?? [],
+		payments,
+	);
 	const currencySymbol = getCurrencySymbol(project.currency);
+	const todayIso = format(new Date(), 'yyyy-MM-dd');
 
 	const monthlyEntries =
 		project.type === 'hourly' ? await getMonthlyEntries(project.id, sp.year, sp.month) : [];
@@ -80,6 +96,7 @@ export default async function ProjectDashboardPage({
 		},
 		{
 			title: 'پرداخت‌شده',
+			description: 'فاکتور پرداخت‌شده + پرداخت مستقیم',
 			value: `${formatMoney(stats.paid)} ${currencySymbol}`,
 			icon: Wallet,
 			className: 'text-emerald-600 dark:text-emerald-400',
@@ -92,15 +109,28 @@ export default async function ProjectDashboardPage({
 		},
 		{
 			title: 'باقی‌مانده',
+			description: 'هنوز فاکتور نشده',
 			value: `${formatMoney(stats.remaining)} ${currencySymbol}`,
 			icon: CircleDollarSign,
 			className: 'text-foreground',
+		},
+		{
+			title: 'تراز پروژه',
+			description: getBalanceDescription(stats.balance),
+			value: `${formatMoney(Math.abs(stats.balance))} ${currencySymbol}${stats.balance < 0 ? ' −' : stats.balance > 0 ? ' +' : ''}`,
+			icon: Scale,
+			className:
+				stats.balance < 0
+					? 'text-sky-600 dark:text-sky-400'
+					: stats.balance > 0
+						? 'text-amber-600 dark:text-amber-400'
+						: 'text-emerald-600 dark:text-emerald-400',
 		},
 	];
 
 	return (
 		<div className='space-y-6'>
-			<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+			<div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-5'>
 				{statCards.map((card) => {
 					const Icon = card.icon;
 
@@ -118,6 +148,19 @@ export default async function ProjectDashboardPage({
 					);
 				})}
 			</div>
+
+			<Card
+				title='پرداخت بدون فاکتور'
+				description='وقتی پول را قبل از صدور فاکتور می‌گیری، اینجا ثبت کن تا تراز پروژه درست بماند'
+			>
+				<ProjectPaymentPanel
+					projectId={project.id}
+					currencySymbol={currencySymbol}
+					paymentMethods={paymentMethods}
+					initialPayments={payments}
+					defaultPaidAt={todayIso}
+				/>
+			</Card>
 
 			{project.type === 'hourly' && (
 				<div className='space-y-4'>

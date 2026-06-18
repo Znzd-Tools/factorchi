@@ -121,6 +121,42 @@ export interface Database {
 				};
 				Relationships: [];
 			};
+			project_payments: {
+				Row: {
+					id: string;
+					project_id: string;
+					user_id: string;
+					payment_method_id: string | null;
+					amount: number;
+					paid_at: string;
+					notes: string | null;
+					created_at: string;
+					updated_at: string;
+				};
+				Insert: {
+					id?: string;
+					project_id: string;
+					user_id: string;
+					payment_method_id?: string | null;
+					amount: number;
+					paid_at?: string;
+					notes?: string | null;
+					created_at?: string;
+					updated_at?: string;
+				};
+				Update: {
+					id?: string;
+					project_id?: string;
+					user_id?: string;
+					payment_method_id?: string | null;
+					amount?: number;
+					paid_at?: string;
+					notes?: string | null;
+					created_at?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
 			project_todos: {
 				Row: {
 					id: string;
@@ -309,6 +345,7 @@ export interface Database {
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type PaymentMethod = Database['public']['Tables']['payment_methods']['Row'];
 export type Project = Database['public']['Tables']['projects']['Row'];
+export type ProjectPayment = Database['public']['Tables']['project_payments']['Row'];
 export type ProjectTodo = Database['public']['Tables']['project_todos']['Row'];
 export type TimeEntry = Database['public']['Tables']['time_entries']['Row'];
 export type Invoice = Database['public']['Tables']['invoices']['Row'];
