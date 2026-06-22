@@ -78,13 +78,17 @@ export async function deleteProjectPayment(
 
 	const { data: payment, error: fetchError } = await supabase
 		.from('project_payments')
-		.select('id, project_id, user_id')
+		.select('id, project_id, user_id, applied_amount')
 		.eq('id', parsed.data.id)
 		.eq('project_id', parsed.data.projectId)
 		.single();
 
 	if (fetchError || !payment || payment.user_id !== user.id) {
 		return { error: 'پرداخت یافت نشد.' };
+	}
+
+	if (Number(payment.applied_amount) > 0) {
+		return { error: 'پرداخت تسویه‌شده با فاکتور قابل حذف نیست.' };
 	}
 
 	const { error } = await supabase.from('project_payments').delete().eq('id', parsed.data.id);

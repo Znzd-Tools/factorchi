@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import type { PaymentMethod, ProjectPayment } from '@/lib/supabase/database.types';
 
+import { getUnappliedPaymentAmount } from '@/features/projects/utils/apply-advance-payments';
+
 export type ProjectPaymentWithMethod = ProjectPayment & {
 	payment_method: Pick<PaymentMethod, 'id' | 'label' | 'type'> | null;
 };
@@ -19,5 +21,7 @@ export async function listProjectPayments(projectId: string): Promise<ProjectPay
 		return [];
 	}
 
-	return (data ?? []) as ProjectPaymentWithMethod[];
+	return ((data ?? []) as ProjectPaymentWithMethod[]).filter(
+		(payment) => getUnappliedPaymentAmount(payment) > 0,
+	);
 }

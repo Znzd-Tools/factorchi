@@ -17,6 +17,7 @@ import {
 	generateHourlyLines,
 	generateTotalLine,
 } from '@/features/invoice/services/invoice-generator';
+import { applyAdvancePaymentsToInvoice } from '@/features/projects/services/apply-advance-to-invoice';
 import type { CelebrationId } from '@/features/engagement/types/celebration';
 import { detectInvoicePaidCelebration } from '@/features/engagement/utils/detect-celebration';
 import { formatInvoiceNumber } from '@/lib/invoice-number';
@@ -246,7 +247,7 @@ export async function updateInvoiceStatus(
 
 	const { data: invoice, error: fetchError } = await supabase
 		.from('invoices')
-		.select('id, status')
+		.select('id, status, total')
 		.eq('id', invoiceId)
 		.eq('project_id', projectId)
 		.eq('user_id', user.id)
@@ -258,6 +259,14 @@ export async function updateInvoiceStatus(
 
 	if (!canTransitionInvoiceStatus(invoice.status, nextStatus)) {
 		return { error: 'تغییر وضعیت مجاز نیست.' };
+	}
+
+	if (nextStatus === 'paid') {
+		const applyResult = await applyAdvancePaymentsToInvoice(projectId, Number(invoice.total));
+
+		if (applyResult.error) {
+			return { error: applyResult.error };
+		}
 	}
 
 	const { error: updateError } = await supabase

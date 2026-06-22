@@ -14,6 +14,7 @@ import {
 	deleteProjectPayment,
 } from '@/features/projects/actions/project-payment.actions';
 import type { ProjectPaymentWithMethod } from '@/features/projects/queries/project-payment.queries';
+import { getUnappliedPaymentAmount } from '@/features/projects/utils/apply-advance-payments';
 import { formatJalaliDate } from '@/lib/jalali';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
 import type { PaymentMethod } from '@/lib/supabase/database.types';
@@ -134,14 +135,17 @@ export function ProjectPaymentPanel({
 
 			{initialPayments.length > 0 ? (
 				<ul className='divide-y divide-border rounded-2xl border border-border'>
-					{initialPayments.map((payment) => (
+					{initialPayments.map((payment) => {
+						const unappliedAmount = getUnappliedPaymentAmount(payment);
+
+						return (
 						<li
 							key={payment.id}
 							className='flex items-start justify-between gap-3 px-4 py-3'
 						>
 							<div className='min-w-0 space-y-1'>
 								<p className='font-bold tabular-nums text-foreground'>
-									{formatMoney(payment.amount)} {currencySymbol}
+									{formatMoney(unappliedAmount)} {currencySymbol}
 								</p>
 								<p className='text-xs text-muted-foreground'>
 									{formatJalaliDate(payment.paid_at)}
@@ -165,11 +169,12 @@ export function ProjectPaymentPanel({
 								<Trash2 size={16} />
 							</Button>
 						</li>
-					))}
+						);
+					})}
 				</ul>
 			) : (
 				<p className='text-sm text-muted-foreground'>
-					هنوز پرداختی بدون فاکتور ثبت نشده. برای پیش‌پرداخت از کارفرما از فرم بالا استفاده کن.
+					پیش‌پرداخت فعالی نیست. وقتی فاکتور را پرداخت‌شده کنی، پیش‌پرداخت قبلی خودکار تسویه می‌شود.
 				</p>
 			)}
 		</div>

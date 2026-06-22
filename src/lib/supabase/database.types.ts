@@ -128,6 +128,7 @@ export interface Database {
 					user_id: string;
 					payment_method_id: string | null;
 					amount: number;
+					applied_amount: number;
 					paid_at: string;
 					notes: string | null;
 					created_at: string;
@@ -139,6 +140,7 @@ export interface Database {
 					user_id: string;
 					payment_method_id?: string | null;
 					amount: number;
+					applied_amount?: number;
 					paid_at?: string;
 					notes?: string | null;
 					created_at?: string;
@@ -150,6 +152,7 @@ export interface Database {
 					user_id?: string;
 					payment_method_id?: string | null;
 					amount?: number;
+					applied_amount?: number;
 					paid_at?: string;
 					notes?: string | null;
 					created_at?: string;

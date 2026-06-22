@@ -1,3 +1,4 @@
+import { getUnappliedPaymentAmount } from '@/features/projects/utils/apply-advance-payments';
 import type { Invoice, Project, ProjectPayment, TimeEntry } from '@/lib/supabase/database.types';
 
 export interface ProjectDashboardStats {
@@ -12,7 +13,7 @@ export interface ProjectDashboardStats {
 type InvoiceSlice = Pick<Invoice, 'status' | 'total'>;
 type TimeEntrySlice = Pick<TimeEntry, 'hours' | 'rate_at_entry'>;
 type ProjectSlice = Pick<Project, 'type' | 'total_amount'>;
-type PaymentSlice = Pick<ProjectPayment, 'amount'>;
+type PaymentSlice = Pick<ProjectPayment, 'amount' | 'applied_amount'>;
 
 const PENDING_STATUSES = new Set(['draft', 'sent', 'overdue']);
 
@@ -28,7 +29,10 @@ export function computeDashboardStats(
 		.filter((invoice) => invoice.status === 'paid')
 		.reduce((sum, invoice) => sum + Number(invoice.total), 0);
 
-	const directPaid = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+	const directPaid = payments.reduce(
+		(sum, payment) => sum + getUnappliedPaymentAmount(payment),
+		0,
+	);
 	const paid = invoicePaid + directPaid;
 
 	const pending = activeInvoices
