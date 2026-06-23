@@ -19,7 +19,6 @@ import {
 	computeDashboardStats,
 	getBalanceDescription,
 } from '@/features/projects/utils/dashboard-stats';
-import { listProjectPayments } from '@/features/projects/queries/project-payment.queries';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
 import { aggregateMonthly } from '@/features/timesheet/utils/aggregate';
@@ -61,7 +60,7 @@ export default async function ProjectDashboardPage({
 		notFound();
 	}
 
-	const [{ data: invoices }, { data: timeEntries }, payments, paymentMethods] = await Promise.all([
+	const [{ data: invoices }, { data: timeEntries }, paymentMethods] = await Promise.all([
 		supabase.from('invoices').select('status, total, percentage').eq('project_id', project.id),
 		project.type === 'hourly'
 			? supabase
@@ -69,16 +68,10 @@ export default async function ProjectDashboardPage({
 					.select('hours, rate_at_entry')
 					.eq('project_id', project.id)
 			: Promise.resolve({ data: [] as { hours: number; rate_at_entry: number }[] }),
-		listProjectPayments(project.id),
 		getUserPaymentMethods(),
 	]);
 
-	const stats = computeDashboardStats(
-		project,
-		invoices ?? [],
-		timeEntries ?? [],
-		payments,
-	);
+	const stats = computeDashboardStats(project, invoices ?? [], timeEntries ?? []);
 	const currencySymbol = getCurrencySymbol(project.currency);
 	const todayIso = format(new Date(), 'yyyy-MM-dd');
 
@@ -96,7 +89,7 @@ export default async function ProjectDashboardPage({
 		},
 		{
 			title: 'پرداخت‌شده',
-			description: 'فاکتور پرداخت‌شده + پرداخت مستقیم',
+			description: 'فاکتورهای پرداخت‌شده',
 			value: `${formatMoney(stats.paid)} ${currencySymbol}`,
 			icon: Wallet,
 			className: 'text-emerald-600 dark:text-emerald-400',
@@ -117,14 +110,12 @@ export default async function ProjectDashboardPage({
 		{
 			title: 'تراز پروژه',
 			description: getBalanceDescription(stats.balance),
-			value: `${formatMoney(Math.abs(stats.balance))} ${currencySymbol}${stats.balance < 0 ? ' −' : stats.balance > 0 ? ' +' : ''}`,
+			value: `${formatMoney(Math.max(stats.balance, 0))} ${currencySymbol}`,
 			icon: Scale,
 			className:
-				stats.balance < 0
-					? 'text-sky-600 dark:text-sky-400'
-					: stats.balance > 0
-						? 'text-amber-600 dark:text-amber-400'
-						: 'text-emerald-600 dark:text-emerald-400',
+				stats.balance <= 0
+					? 'text-emerald-600 dark:text-emerald-400'
+					: 'text-foreground',
 		},
 	];
 
@@ -151,13 +142,11 @@ export default async function ProjectDashboardPage({
 
 			<Card
 				title='پرداخت بدون فاکتور'
-				description='وقتی پول را قبل از صدور فاکتور می‌گیری، اینجا ثبت کن تا تراز پروژه درست بماند'
+				description='پیش‌پرداخت از کارفرما — فقط برای تسویه بعدی فاکتور'
 			>
 				<ProjectPaymentPanel
 					projectId={project.id}
-					currencySymbol={currencySymbol}
 					paymentMethods={paymentMethods}
-					initialPayments={payments}
 					defaultPaidAt={todayIso}
 				/>
 			</Card>
