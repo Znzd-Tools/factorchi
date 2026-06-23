@@ -247,7 +247,7 @@ export async function updateInvoiceStatus(
 
 	const { data: invoice, error: fetchError } = await supabase
 		.from('invoices')
-		.select('id, status, total')
+		.select('id, status, total, issue_date')
 		.eq('id', invoiceId)
 		.eq('project_id', projectId)
 		.eq('user_id', user.id)
@@ -262,7 +262,11 @@ export async function updateInvoiceStatus(
 	}
 
 	if (nextStatus === 'paid') {
-		const applyResult = await applyAdvancePaymentsToInvoice(projectId, Number(invoice.total));
+		const applyResult = await applyAdvancePaymentsToInvoice(
+			projectId,
+			Number(invoice.total),
+			invoice.issue_date,
+		);
 
 		if (applyResult.error) {
 			return { error: applyResult.error };

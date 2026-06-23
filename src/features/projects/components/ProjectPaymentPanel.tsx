@@ -14,7 +14,6 @@ import {
 	deleteProjectPayment,
 } from '@/features/projects/actions/project-payment.actions';
 import type { ProjectPaymentWithMethod } from '@/features/projects/queries/project-payment.queries';
-import { getUnappliedPaymentAmount } from '@/features/projects/utils/apply-advance-payments';
 import { formatJalaliDate } from '@/lib/jalali';
 import { formatMoney, parseMoneyInput } from '@/lib/money';
 import type { PaymentMethod } from '@/lib/supabase/database.types';
@@ -25,6 +24,7 @@ interface IProjectPaymentPanelProps {
 	currencySymbol: string;
 	paymentMethods: PaymentMethod[];
 	initialPayments: ProjectPaymentWithMethod[];
+	appliedByPaymentId: Record<string, number>;
 	defaultPaidAt: string;
 }
 
@@ -33,6 +33,7 @@ export function ProjectPaymentPanel({
 	currencySymbol,
 	paymentMethods,
 	initialPayments,
+	appliedByPaymentId,
 	defaultPaidAt,
 }: IProjectPaymentPanelProps) {
 	const router = useRouter();
@@ -136,8 +137,8 @@ export function ProjectPaymentPanel({
 			{initialPayments.length > 0 ? (
 				<ul className='divide-y divide-border rounded-2xl border border-border'>
 					{initialPayments.map((payment) => {
-						const unappliedAmount = getUnappliedPaymentAmount(payment);
-						const appliedAmount = Number(payment.amount) - unappliedAmount;
+						const appliedAmount = appliedByPaymentId[payment.id] ?? 0;
+						const unappliedAmount = Number(payment.amount) - appliedAmount;
 
 						return (
 							<li

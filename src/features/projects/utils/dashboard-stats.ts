@@ -1,4 +1,7 @@
-import { getUnappliedPaymentAmount } from '@/features/projects/utils/apply-advance-payments';
+import {
+	computePrepaidSettlement,
+	type IPrepaidSettlementInvoice,
+} from '@/features/projects/utils/apply-advance-payments';
 import type { Invoice, Project, ProjectPayment, TimeEntry } from '@/lib/supabase/database.types';
 
 export interface ProjectDashboardStats {
@@ -8,24 +11,16 @@ export interface ProjectDashboardStats {
 	remaining: number;
 	prepaid: number;
 	prepaidUnapplied: number;
-	/** Work value minus paid invoices, with prepaid credit applied. */
+	/** Remaining prepaid credit after eligible paid invoices. */
 	balance: number;
 }
 
-type InvoiceSlice = Pick<Invoice, 'status' | 'total'>;
+type InvoiceSlice = Pick<Invoice, 'status' | 'total'> & { issue_date?: string };
 type TimeEntrySlice = Pick<TimeEntry, 'hours' | 'rate_at_entry'>;
 type ProjectSlice = Pick<Project, 'type' | 'total_amount'>;
-type PaymentSlice = Pick<ProjectPayment, 'amount' | 'applied_amount'>;
+type PaymentSlice = Pick<ProjectPayment, 'id' | 'amount' | 'paid_at'>;
 
 const PENDING_STATUSES = new Set(['draft', 'sent', 'overdue']);
-
-export function computePrepaidCredit(prepaidTotal: number, invoicePaid: number): number {
-	if (invoicePaid <= 0 || prepaidTotal <= 0) {
-		return 0;
-	}
-
-	return Math.min(prepaidTotal, invoicePaid);
-}
 
 export function computeDashboardStats(
 	project: ProjectSlice,
@@ -48,10 +43,19 @@ export function computeDashboardStats(
 		0,
 	);
 
-	const prepaid = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
-	const prepaidUnapplied = payments.reduce(
-		(sum, payment) => sum + getUnappliedPaymentAmount(payment),
-		0,
+	const settlement = computePrepaidSettlement(
+		payments.map((payment) => ({
+			id: payment.id,
+			amount: Number(payment.amount),
+			paid_at: payment.paid_at,
+		})),
+		activeInvoices.map(
+			(invoice): IPrepaidSettlementInvoice => ({
+				status: invoice.status,
+				total: Number(invoice.total),
+				issue_date: invoice.issue_date ?? '',
+			}),
+		),
 	);
 
 	const totalContract =
@@ -63,16 +67,23 @@ export function computeDashboardStats(
 				);
 
 	const remaining = Math.max(totalContract - invoicedTotal, 0);
-	const prepaidCredit = computePrepaidCredit(prepaid, paid);
-	const balance = totalContract - paid + prepaidCredit;
+	const balance = settlement.prepaidUnapplied;
 
-	return { totalContract, paid, pending, remaining, prepaid, prepaidUnapplied, balance };
+	return {
+		totalContract,
+		paid,
+		pending,
+		remaining,
+		prepaid: settlement.prepaidTotal,
+		prepaidUnapplied: settlement.prepaidUnapplied,
+		balance,
+	};
 }
 
 export function getBalanceDescription(balance: number): string {
 	if (balance <= 0) {
-		return 'کل ارزش کار تسویه شده';
+		return 'پیش‌پرداخت کاملاً تسویه شده';
 	}
 
-	return 'ارزش کار منهای فاکتور پرداخت‌شده (با احتساب پیش‌پرداخت)';
+	return 'پیش‌پرداخت باقی‌مانده پس از کسر فاکتورهای واجد شرایط';
 }

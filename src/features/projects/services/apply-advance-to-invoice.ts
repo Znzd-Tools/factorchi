@@ -1,9 +1,13 @@
-import { allocateAdvancePayments, getUnappliedPaymentAmount } from '@/features/projects/utils/apply-advance-payments';
+import {
+	allocateAdvancePayments,
+	getUnappliedPaymentAmount,
+} from '@/features/projects/utils/apply-advance-payments';
 import { createClient } from '@/lib/supabase/server';
 
 export async function applyAdvancePaymentsToInvoice(
 	projectId: string,
 	invoiceTotal: number,
+	invoiceIssueDate: string,
 ): Promise<{ error?: string }> {
 	if (invoiceTotal <= 0) {
 		return {};
@@ -13,7 +17,7 @@ export async function applyAdvancePaymentsToInvoice(
 
 	const { data: payments, error: fetchError } = await supabase
 		.from('project_payments')
-		.select('id, amount, applied_amount')
+		.select('id, amount, applied_amount, paid_at')
 		.eq('project_id', projectId)
 		.order('paid_at', { ascending: true })
 		.order('created_at', { ascending: true });
@@ -26,7 +30,11 @@ export async function applyAdvancePaymentsToInvoice(
 		(payment) => getUnappliedPaymentAmount(payment) > 0,
 	);
 
-	const updates = allocateAdvancePayments(unappliedPayments, invoiceTotal);
+	const updates = allocateAdvancePayments(
+		unappliedPayments,
+		invoiceTotal,
+		invoiceIssueDate,
+	);
 
 	for (const update of updates) {
 		const { error } = await supabase

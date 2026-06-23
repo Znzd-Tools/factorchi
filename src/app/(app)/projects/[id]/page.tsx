@@ -20,6 +20,7 @@ import {
 	computeDashboardStats,
 	getBalanceDescription,
 } from '@/features/projects/utils/dashboard-stats';
+import { computePrepaidSettlement } from '@/features/projects/utils/apply-advance-payments';
 import { listProjectPayments } from '@/features/projects/queries/project-payment.queries';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
@@ -63,7 +64,10 @@ export default async function ProjectDashboardPage({
 	}
 
 	const [{ data: invoices }, { data: timeEntries }, payments, paymentMethods] = await Promise.all([
-		supabase.from('invoices').select('status, total, percentage').eq('project_id', project.id),
+		supabase
+			.from('invoices')
+			.select('status, total, percentage, issue_date')
+			.eq('project_id', project.id),
 		project.type === 'hourly'
 			? supabase
 					.from('time_entries')
@@ -79,6 +83,18 @@ export default async function ProjectDashboardPage({
 		invoices ?? [],
 		timeEntries ?? [],
 		payments,
+	);
+	const prepaidSettlement = computePrepaidSettlement(
+		payments.map((payment) => ({
+			id: payment.id,
+			amount: Number(payment.amount),
+			paid_at: payment.paid_at,
+		})),
+		(invoices ?? []).map((invoice) => ({
+			status: invoice.status,
+			total: Number(invoice.total),
+			issue_date: invoice.issue_date,
+		})),
 	);
 	const currencySymbol = getCurrencySymbol(project.currency);
 	const todayIso = format(new Date(), 'yyyy-MM-dd');
@@ -167,6 +183,7 @@ export default async function ProjectDashboardPage({
 					currencySymbol={currencySymbol}
 					paymentMethods={paymentMethods}
 					initialPayments={payments}
+					appliedByPaymentId={Object.fromEntries(prepaidSettlement.appliedByPaymentId)}
 					defaultPaidAt={todayIso}
 				/>
 			</Card>
