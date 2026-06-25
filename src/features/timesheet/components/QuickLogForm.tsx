@@ -132,42 +132,72 @@ export function QuickLogForm({ projects }: IQuickLogFormProps) {
 				</div>
 			</div>
 
-			<div className='space-y-2'>
+			<div className='space-y-3'>
 				<p className='text-sm font-bold text-muted-foreground'>چند ساعت؟</p>
-				<div className='grid grid-cols-4 gap-2'>
-					{HOUR_PRESETS.map((preset) => {
-						const active = !customHours && hours === preset;
+				{!customHours ? (
+					<>
+						<div className='grid grid-cols-4 gap-2'>
+							{HOUR_PRESETS.map((preset) => {
+								const active = hours === preset;
 
-						return (
+								return (
+									<Button
+										key={preset}
+										type='button'
+										variant={active ? 'primary' : 'secondary'}
+										size='lg'
+										className='tabular-nums'
+										haptic='selection'
+										onClick={() => {
+											setCustomHours(false);
+											setHours(preset);
+										}}
+									>
+										{toFaNumber(preset)}
+									</Button>
+								);
+							})}
+						</div>
+						<Button
+							type='button'
+							variant='ghost'
+							size='sm'
+							className='w-full'
+							haptic='selection'
+							onClick={() => {
+								setCustomHours(true);
+								if (hours === '' || HOUR_PRESETS.includes(hours as (typeof HOUR_PRESETS)[number])) {
+									setHours('');
+								}
+							}}
+						>
+							سفارشی
+						</Button>
+					</>
+				) : (
+					<div className='space-y-3 rounded-xl border border-border bg-card p-4'>
+						<div className='flex items-center justify-between gap-2'>
+							<p className='text-sm font-bold text-foreground'>مدت دلخواه</p>
 							<Button
-								key={preset}
 								type='button'
-								variant={active ? 'primary' : 'secondary'}
-								size='lg'
-								className='tabular-nums'
-								haptic='selection'
+								variant='ghost'
+								size='sm'
+								haptic='light'
 								onClick={() => {
 									setCustomHours(false);
-									setHours(preset);
+									setHours(2);
 								}}
 							>
-								{toFaNumber(preset)}
+								بازگشت به پیش‌فرض
 							</Button>
-						);
-					})}
-				</div>
-				<Button
-					type='button'
-					variant={customHours ? 'primary' : 'ghost'}
-					size='sm'
-					className='w-full'
-					haptic='selection'
-					onClick={() => setCustomHours(true)}
-				>
-					سفارشی
-				</Button>
-				{customHours && (
-					<DurationInput label='مدت دقیق' value={hours} onChange={setHours} maxHours={24} />
+						</div>
+						<DurationInput
+							value={hours}
+							onChange={setHours}
+							maxHours={24}
+							size='lg'
+						/>
+					</div>
 				)}
 			</div>
 

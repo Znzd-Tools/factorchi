@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, LayoutDashboard, LogOut } from 'lucide-react';
+import { ArrowRight, LayoutDashboard, LogOut, Timer } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,19 +12,20 @@ import { signOutAction } from '@/features/auth/actions/auth.actions';
 import { cn } from '@/lib/utils/cn';
 
 const ROUTE_TITLES: Record<string, string> = {
-	[ROUTES.dashboard]: 'داشبورد',
+	[ROUTES.dashboard]: 'امروز',
 	[ROUTES.quickLog]: 'ثبت سریع',
 	[ROUTES.monthlyWrapped]: 'خلاصه ماه',
 	[ROUTES.projects]: 'پروژه‌ها',
 	[ROUTES.projectNew]: 'پروژه جدید',
-	[ROUTES.profile]: 'پروفایل',
+	[ROUTES.profile]: 'تنظیمات',
 	[ROUTES.paymentMethods]: 'روش‌های پرداخت',
 };
 
 const DESKTOP_NAV = [
-	{ href: ROUTES.dashboard, label: 'داشبورد' },
+	{ href: ROUTES.dashboard, label: 'امروز' },
 	{ href: ROUTES.projects, label: 'پروژه‌ها' },
-	{ href: ROUTES.profile, label: 'پروفایل' },
+	{ href: ROUTES.quickLog, label: 'ثبت سریع', icon: Timer },
+	{ href: ROUTES.profile, label: 'تنظیمات' },
 ] as const;
 
 function resolveTitle(pathname: string): string {
@@ -37,15 +38,19 @@ function resolveTitle(pathname: string): string {
 	}
 
 	if (pathname.startsWith('/projects/') && pathname.includes('/timesheet')) {
-		return 'تایم‌شیت';
+		return 'کار';
 	}
 
 	if (pathname.startsWith('/projects/') && pathname.includes('/todos')) {
-		return 'کارها';
+		return 'کار';
 	}
 
 	if (pathname.startsWith('/projects/') && pathname.includes('/settings')) {
 		return 'تنظیمات';
+	}
+
+	if (pathname.match(/^\/projects\/[^/]+$/)) {
+		return 'خلاصه';
 	}
 
 	return 'فاکتورچی';
@@ -94,14 +99,14 @@ export function AppHeader() {
 	const inProject = isProjectDetailRoute(pathname);
 
 	return (
-		<header className='app-header no-print sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-xl'>
+		<header className='app-header no-print sticky top-0 z-40 border-b border-border bg-card/90 backdrop-blur-xl'>
 			<div className='mx-auto flex h-[var(--header-height)] max-w-6xl items-center gap-2 px-4'>
 				<div className='flex min-w-0 flex-1 items-center gap-2'>
 					{backHref ? (
 						<HapticLink
 							href={backHref}
 							haptic='light'
-							className='touch-target flex shrink-0 items-center justify-center rounded-xl text-primary transition-colors active:bg-muted'
+							className='touch-target flex shrink-0 items-center justify-center rounded-lg text-primary transition-colors active:bg-muted'
 							aria-label='بازگشت'
 						>
 							<ArrowRight size={22} />
@@ -110,9 +115,9 @@ export function AppHeader() {
 						<HapticLink
 							href={ROUTES.dashboard}
 							haptic='selection'
-							className='flex shrink-0 items-center gap-2 rounded-xl px-1 py-1'
+							className='flex shrink-0 items-center gap-2 rounded-lg px-1 py-1'
 						>
-							<span className='flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-soft)]'>
+							<span className='flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground'>
 								<LayoutDashboard size={18} aria-hidden />
 							</span>
 							<span className='hidden font-black text-foreground sm:inline'>فاکتورچی</span>
@@ -131,6 +136,7 @@ export function AppHeader() {
 						const active =
 							pathname === href ||
 							(href === ROUTES.profile && pathname.startsWith(`${ROUTES.profile}/`)) ||
+							(href === ROUTES.dashboard && pathname.startsWith(`${ROUTES.dashboard}/`)) ||
 							(href === ROUTES.projects &&
 								pathname.startsWith('/projects') &&
 								pathname !== ROUTES.projectNew);
@@ -140,7 +146,7 @@ export function AppHeader() {
 								key={href}
 								href={href}
 								className={cn(
-									'rounded-xl px-3 py-2 text-sm font-bold transition-colors',
+									'rounded-lg px-3 py-2 text-sm font-bold transition-colors',
 									active
 										? 'bg-primary text-primary-foreground'
 										: 'text-muted-foreground hover:bg-muted hover:text-foreground',

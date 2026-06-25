@@ -3,9 +3,13 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { Button } from '@/components/atoms/Button';
-import { Card } from '@/components/atoms/Card';
+import { Disclosure } from '@/components/ui/Disclosure';
+import { MetricStrip } from '@/components/ui/MetricStrip';
 import { ROUTES } from '@/config/routes';
+import { ProjectActionBar } from '@/features/projects/components/ProjectActionBar';
+import { ProjectWorkShell } from '@/features/projects/components/ProjectWorkShell';
 import { listOpenProjectTodos } from '@/features/todos/queries/project-todo.queries';
+import { ProjectTodoList } from '@/features/todos/components/ProjectTodoList';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
 import { TimesheetCsvPanel } from '@/features/timesheet/components/TimesheetCsvPanel';
@@ -18,6 +22,7 @@ import { formatHoursAsDurationFa } from '@/lib/duration';
 import { getJalaliMonthRange } from '@/lib/jalali';
 import { formatMoney } from '@/lib/money';
 import { createClient } from '@/lib/supabase/server';
+import { Clock } from 'lucide-react';
 
 interface ITimesheetPageProps {
 	params: Promise<{ id: string }>;
@@ -45,52 +50,60 @@ export default async function TimesheetPage({ params, searchParams }: ITimesheet
 
 	if (project.type !== 'hourly') {
 		return (
-			<Card title='تایم‌شیت در دسترس نیست'>
+			<div className='space-y-4'>
 				<p className='text-sm leading-relaxed text-muted-foreground'>
-					این پروژه از نوع «قرارداد کل» است و ثبت ساعت برای آن فعال نیست.
+					این پروژه از نوع «قرارداد کل» است. کارها را از بخش کار مدیریت کنید.
 				</p>
-				<div className='mt-4'>
-					<Link href={ROUTES.project(id)}>
-						<Button variant='secondary'>بازگشت به داشبورد پروژه</Button>
-					</Link>
-				</div>
-			</Card>
+				<Link href={ROUTES.projectTodos(id)}>
+					<Button variant='secondary'>رفتن به کارها</Button>
+				</Link>
+			</div>
 		);
 	}
 
-	const [entries, openTodos] = await Promise.all([
+	const [entries, openTodos, todos] = await Promise.all([
 		getMonthlyEntries(id, sp.year, sp.month),
 		listOpenProjectTodos(id),
+		supabase.from('project_todos').select('*').eq('project_id', id).order('created_at', { ascending: false }),
 	]);
 	const totals = aggregateMonthly(entries);
 	const currencyLabel = getCurrencyLabel(project.currency);
 	const monthRange = getJalaliMonthRange(sp.year, sp.month);
 
-	return (
-		<div className='space-y-5'>
+	const timeContent = (
+		<div className='space-y-4'>
 			<Suspense fallback={<MonthPickerFallback />}>
 				<MonthPicker />
 			</Suspense>
 
-			<TimesheetCsvPanel
-				projectId={id}
-				defaultStartDate={monthRange.startIso}
-				defaultEndDate={monthRange.endIso}
+			<MetricStrip
+				items={[
+					{
+						label: 'مجموع ساعات',
+						value: formatHoursAsDurationFa(totals.totalHours),
+						icon: Clock,
+						tone: 'primary',
+					},
+					{
+						label: 'مجموع مبلغ',
+						value: `${formatMoney(totals.totalAmount)} ${currencyLabel}`,
+						tone: 'success',
+					},
+					{
+						label: 'ردیف‌ها',
+						value: String(totals.entryCount),
+						tone: 'default',
+					},
+				]}
 			/>
 
-			<div key={`${sp.year}-${sp.month}`} className='grid grid-cols-2 gap-3'>
-				<Card title='مجموع ساعات' className='p-4'>
-					<p className='text-2xl font-black tabular-nums text-foreground' dir='ltr'>
-						{formatHoursAsDurationFa(totals.totalHours)}
-					</p>
-				</Card>
-				<Card title='مجموع مبلغ' className='p-4'>
-					<p className='text-2xl font-black tabular-nums text-foreground'>
-						{formatMoney(totals.totalAmount)}{' '}
-						<span className='text-sm font-bold text-muted-foreground'>{currencyLabel}</span>
-					</p>
-				</Card>
-			</div>
+			<Disclosure title='ورود و خروجی فایل' description='CSV import/export'>
+				<TimesheetCsvPanel
+					projectId={id}
+					defaultStartDate={monthRange.startIso}
+					defaultEndDate={monthRange.endIso}
+				/>
+			</Disclosure>
 
 			<TimesheetEntriesTable
 				projectId={id}
@@ -100,6 +113,26 @@ export default async function TimesheetPage({ params, searchParams }: ITimesheet
 				entries={entries}
 				openTodos={openTodos}
 			/>
+		</div>
+	);
+
+	const todosContent = (
+		<ProjectTodoList
+			projectId={id}
+			projectType={project.type}
+			initialTodos={todos.data ?? []}
+		/>
+	);
+
+	return (
+		<div className='space-y-4 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1rem)] md:pb-2'>
+			<ProjectWorkShell
+				projectId={id}
+				projectType={project.type}
+				timeContent={timeContent}
+				todosContent={todosContent}
+			/>
+			<ProjectActionBar projectId={id} projectType={project.type} context='work' />
 		</div>
 	);
 }

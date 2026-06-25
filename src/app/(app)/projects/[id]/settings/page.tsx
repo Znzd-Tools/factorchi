@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 
-import { Card } from '@/components/atoms/Card';
+import { Surface } from '@/components/ui/Surface';
 import { projectToFormValues } from '@/features/projects/utils/project-form';
 import { ProjectForm } from '@/features/projects/components/ProjectForm';
 import { requireUser } from '@/lib/auth/require-user';
@@ -30,14 +30,14 @@ export default async function ProjectSettingsPage({ params }: IProjectSettingsPa
 	}
 
 	return (
-		<div className='mx-auto max-w-2xl'>
-			<Card title='تنظیمات پروژه' description='ویرایش اطلاعات پروژه یا بایگانی'>
+		<div className='mx-auto max-w-2xl pb-6'>
+			<Surface title='تنظیمات پروژه' description='ویرایش اطلاعات یا بایگانی'>
 				<ProjectForm
 					mode='edit'
 					projectId={project.id}
 					defaultValues={projectToFormValues(project)}
 				/>
-			</Card>
+			</Surface>
 		</div>
 	);
 }

@@ -5,7 +5,7 @@ import { Button } from '@/components/atoms/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { ROUTES } from '@/config/routes';
-import { ProjectCard } from '@/features/projects/components/ProjectCard';
+import { ProjectsPortfolio } from '@/features/projects/components/ProjectsPortfolio';
 import { buildProjectHealthMap } from '@/features/projects/utils/project-health';
 import { getCurrentJalaliMonth, getJalaliMonthRange } from '@/lib/jalali';
 import { requireUser } from '@/lib/auth/require-user';
@@ -22,11 +22,10 @@ export default async function ProjectsPage() {
 		.from('projects')
 		.select('*')
 		.eq('user_id', user!.id)
-		.eq('status', 'active')
 		.order('updated_at', { ascending: false });
 
-	const activeProjects = projects ?? [];
-	const projectIds = activeProjects.map((project) => project.id);
+	const allProjects = projects ?? [];
+	const projectIds = allProjects.map((project) => project.id);
 
 	const { year, month } = getCurrentJalaliMonth();
 	const monthRange = getJalaliMonthRange(year, month);
@@ -46,18 +45,20 @@ export default async function ProjectsPage() {
 			: [{ data: [] }, { data: [] }];
 
 	const healthByProject = buildProjectHealthMap(
-		activeProjects,
+		allProjects,
 		invoices ?? [],
 		timeEntries ?? [],
 		monthRange.startIso,
 		monthRange.endIso,
 	);
 
+	const activeCount = allProjects.filter((project) => project.status === 'active').length;
+
 	return (
 		<div className='space-y-6 pb-2'>
 			<PageHeader
 				title='پروژه‌ها'
-				description='مدیریت پروژه‌ها، زمان و فاکتورها'
+				description='مدیریت مشتری‌ها، زمان و فاکتورها'
 				action={
 					<Link href={ROUTES.projectNew}>
 						<Button size='sm' haptic='medium'>
@@ -68,7 +69,7 @@ export default async function ProjectsPage() {
 				}
 			/>
 
-			{activeProjects.length === 0 ? (
+			{activeCount === 0 && allProjects.length === 0 ? (
 				<EmptyState
 					icon={FolderKanban}
 					title='هنوز پروژه‌ای ندارید'
@@ -82,22 +83,7 @@ export default async function ProjectsPage() {
 					}
 				/>
 			) : (
-				<div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-					{activeProjects.map((project) => (
-						<ProjectCard
-							key={project.id}
-							project={project}
-							health={
-								healthByProject.get(project.id) ?? {
-									level: 'healthy',
-									score: 90,
-									label: 'سالم',
-									hint: 'وضعیت خوب',
-								}
-							}
-						/>
-					))}
-				</div>
+				<ProjectsPortfolio projects={allProjects} healthByProject={healthByProject} />
 			)}
 		</div>
 	);

@@ -1,12 +1,8 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { FilePlus2 } from 'lucide-react';
 
-import { Button } from '@/components/atoms/Button';
-import { ROUTES } from '@/config/routes';
 import { ProjectHealthBadge } from '@/features/projects/components/ProjectHealthBadge';
-import { ProjectTabs } from '@/features/projects/components/ProjectTabs';
+import { WorkspaceNav } from '@/features/projects/components/WorkspaceNav';
 import { buildProjectHealthMap } from '@/features/projects/utils/project-health';
 import { getCurrentJalaliMonth, getJalaliMonthRange } from '@/lib/jalali';
 import { requireUser } from '@/lib/auth/require-user';
@@ -57,33 +53,22 @@ export default async function ProjectLayout({ children, params }: IProjectLayout
 	const health = healthMap.get(project.id);
 
 	return (
-		<div className='space-y-5 pb-24 md:pb-6'>
+		<div className='space-y-5 pb-6 md:pb-2'>
 			<div className='no-print space-y-2'>
 				{health && <ProjectHealthBadge health={health} />}
 				<div>
 					<h1 className='text-xl font-black text-foreground sm:text-2xl'>{project.name}</h1>
 					<p className='mt-1 text-sm text-muted-foreground'>{project.client_name}</p>
-					{health && (
-						<p className='mt-1 text-xs text-muted-foreground'>{health.hint}</p>
-					)}
+					{health && <p className='mt-1 text-xs text-muted-foreground'>{health.hint}</p>}
 				</div>
 			</div>
 
-			<Suspense fallback={<div className='no-print h-12 animate-pulse rounded-2xl bg-muted' />}>
-				<div className='no-print'>
-					<ProjectTabs projectId={project.id} projectType={project.type} />
-				</div>
-			</Suspense>
+			<div className='no-print flex flex-col gap-5 md:flex-row-reverse md:items-start'>
+				<Suspense fallback={<div className='h-12 animate-pulse rounded-xl bg-muted md:w-44' />}>
+					<WorkspaceNav projectId={project.id} projectType={project.type} />
+				</Suspense>
 
-			{children}
-
-			<div className='no-print fixed inset-x-0 bottom-[calc(var(--safe-bottom)+0.75rem)] z-30 px-4 md:static md:z-auto md:px-0 md:pt-2'>
-				<Link href={ROUTES.projectInvoiceNew(project.id)} className='mx-auto block max-w-lg md:max-w-none'>
-					<Button className='w-full shadow-[var(--shadow-elevated)]' size='lg' haptic='medium'>
-						<FilePlus2 size={18} />
-						صدور فاکتور
-					</Button>
-				</Link>
+				<div className='min-w-0 flex-1'>{children}</div>
 			</div>
 		</div>
 	);

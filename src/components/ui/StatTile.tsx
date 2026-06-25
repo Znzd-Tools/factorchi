@@ -11,26 +11,28 @@ interface IStatTileProps {
 }
 
 const toneClasses = {
-	default: 'from-slate-600 to-slate-800',
-	primary: 'from-indigo-500 to-violet-700',
-	success: 'from-emerald-500 to-teal-700',
-	warning: 'from-amber-500 to-orange-600',
+	default: 'text-foreground',
+	primary: 'text-primary',
+	success: 'text-success',
+	warning: 'text-warning',
 } as const;
 
 export function StatTile({ label, value, icon: Icon, tone = 'default', className }: IStatTileProps) {
 	return (
 		<div
 			className={cn(
-				'relative overflow-hidden rounded-2xl bg-gradient-to-br p-4 text-white shadow-[var(--shadow-soft)]',
-				toneClasses[tone],
+				'rounded-xl border border-border bg-card p-4',
 				className,
 			)}
 		>
 			<div className='flex items-center justify-between gap-2'>
-				<span className='text-xs font-bold opacity-90'>{label}</span>
-				<Icon size={18} className='opacity-90' aria-hidden />
+				<span className='text-xs font-medium text-muted-foreground'>{label}</span>
+				<Icon size={16} className='text-muted-foreground' aria-hidden />
 			</div>
-			<p className='mt-3 text-xl font-black tabular-nums sm:text-2xl' dir='ltr'>
+			<p
+				className={cn('mt-2 text-xl font-black tabular-nums sm:text-2xl', toneClasses[tone])}
+				dir='ltr'
+			>
 				{value}
 			</p>
 		</div>

@@ -20,6 +20,7 @@ interface IDurationInputProps {
 	className?: string;
 	placeholder?: string;
 	maxHours?: number;
+	size?: 'default' | 'lg';
 }
 
 function valueToText(value: number | ''): string {
@@ -38,6 +39,7 @@ export function DurationInput({
 	className,
 	placeholder = '۰:۰۰',
 	maxHours = 24,
+	size = 'default',
 }: IDurationInputProps) {
 	const [draft, setDraft] = useState(() => valueToText(value));
 	const [focused, setFocused] = useState(false);
@@ -93,9 +95,22 @@ export function DurationInput({
 	const displayError = error ?? localError;
 
 	return (
-		<div className={cn('space-y-1', className)}>
-			{label && <label className='block text-sm text-muted-foreground'>{label}</label>}
-			<div className='relative'>
+		<div className={cn('space-y-1.5', className)}>
+			{label && (
+				<label className='block text-sm font-bold text-muted-foreground'>{label}</label>
+			)}
+			<div
+				dir='ltr'
+				className={cn(
+					'relative rounded-xl border border-border bg-input transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-ring/30',
+					displayError && 'border-destructive focus-within:ring-destructive/30',
+				)}
+			>
+				<Clock
+					size={size === 'lg' ? 20 : 16}
+					className='pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground'
+					aria-hidden
+				/>
 				<input
 					type='text'
 					inputMode='numeric'
@@ -104,19 +119,17 @@ export function DurationInput({
 					onFocus={handleFocus}
 					onBlur={handleBlur}
 					placeholder={placeholder}
-					dir='ltr'
 					className={cn(
-						'w-full rounded-xl border border-border bg-input py-2.5 pe-10 ps-3 text-left font-bold tabular-nums outline-none transition-all focus:ring-2 focus:ring-blue-500',
-						displayError && 'border-red-400 focus:ring-red-400',
+						'w-full bg-transparent text-center font-black tabular-nums text-foreground outline-none',
+						size === 'lg' ? 'min-h-14 px-12 text-2xl' : 'min-h-12 px-10 text-lg',
 					)}
-				/>
-				<Clock
-					size={16}
-					className='pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground'
+					aria-invalid={Boolean(displayError)}
 				/>
 			</div>
-			<p className='text-xs text-muted-foreground'>مثال: 2:30 برای دو ساعت و نیم</p>
-			{displayError && <p className='text-xs text-red-500'>{displayError}</p>}
+			<p className='text-start text-xs text-muted-foreground'>
+				مثال: <span dir='ltr' className='tabular-nums'>۲:۳۰</span> برای دو ساعت و نیم
+			</p>
+			{displayError && <p className='text-xs text-destructive'>{displayError}</p>}
 		</div>
 	);
 }

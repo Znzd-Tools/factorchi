@@ -12,25 +12,34 @@ interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	variant?: ButtonVariant;
 	size?: ButtonSize;
 	haptic?: HapticPattern | false;
+	fullWidth?: boolean;
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-	primary:
-		'bg-primary text-primary-foreground shadow-[var(--shadow-soft)] hover:opacity-95 active:opacity-90',
+	primary: 'bg-primary text-primary-foreground hover:opacity-95 active:opacity-90',
 	secondary: 'bg-muted text-foreground border border-border hover:bg-border/60',
 	ghost: 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground',
 	danger: 'bg-destructive text-white hover:opacity-95',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-	sm: 'min-h-9 px-3 py-2 text-sm rounded-xl',
-	md: 'min-h-11 px-4 py-2.5 text-sm rounded-xl',
-	lg: 'min-h-12 px-5 py-3 text-base rounded-2xl',
+	sm: 'min-h-9 px-3 py-2 text-sm rounded-lg',
+	md: 'min-h-11 px-4 py-2.5 text-sm rounded-lg',
+	lg: 'min-h-12 px-5 py-3 text-base rounded-xl',
 };
 
 export const Button = forwardRef<HTMLButtonElement, IButtonProps>(
 	(
-		{ className, variant = 'primary', size = 'md', type = 'button', haptic = 'light', onClick, ...props },
+		{
+			className,
+			variant = 'primary',
+			size = 'md',
+			type = 'button',
+			haptic = 'light',
+			fullWidth = false,
+			onClick,
+			...props
+		},
 		ref,
 	) => (
 		<button
@@ -40,6 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, IButtonProps>(
 				'inline-flex touch-target items-center justify-center gap-2 font-bold transition-all active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
 				variantClasses[variant],
 				sizeClasses[size],
+				fullWidth && 'w-full',
 				className,
 			)}
 			onClick={(event) => {

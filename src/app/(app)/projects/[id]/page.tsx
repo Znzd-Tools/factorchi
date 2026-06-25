@@ -1,26 +1,19 @@
-import { format } from 'date-fns';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import {
-	CalendarDays,
-	CircleDollarSign,
-	Clock,
-	HandCoins,
-	Scale,
-	TrendingUp,
-	Wallet,
-} from 'lucide-react';
 
-import { Card } from '@/components/atoms/Card';
+import { CircleDollarSign, Clock, Scale, TrendingUp, Wallet } from 'lucide-react';
+
+import { Disclosure } from '@/components/ui/Disclosure';
+import { MetricStrip } from '@/components/ui/MetricStrip';
+import { Surface } from '@/components/ui/Surface';
+import { ROUTES } from '@/config/routes';
 import { getCurrencySymbol } from '@/features/invoice/constants/currencies';
-import { getUserPaymentMethods } from '@/features/invoice/actions/invoice.actions';
-import { ProjectPaymentPanel } from '@/features/projects/components/ProjectPaymentPanel';
-import { ProjectWhatIfCalculator } from '@/features/projects/components/ProjectWhatIfCalculator';
+import { ProjectActionBar } from '@/features/projects/components/ProjectActionBar';
 import {
 	computeDashboardStats,
 	getBalanceDescription,
 } from '@/features/projects/utils/dashboard-stats';
-import { computePrepaidSettlement } from '@/features/projects/utils/apply-advance-payments';
 import { listProjectPayments } from '@/features/projects/queries/project-payment.queries';
 import { getMonthlyEntries } from '@/features/timesheet/queries/time-entry.queries';
 import { MonthPicker, MonthPickerFallback } from '@/features/timesheet/components/MonthPicker';
@@ -63,7 +56,7 @@ export default async function ProjectDashboardPage({
 		notFound();
 	}
 
-	const [{ data: invoices }, { data: timeEntries }, payments, paymentMethods] = await Promise.all([
+	const [{ data: invoices }, { data: timeEntries }, payments] = await Promise.all([
 		supabase
 			.from('invoices')
 			.select('status, total, percentage, issue_date')
@@ -75,7 +68,6 @@ export default async function ProjectDashboardPage({
 					.eq('project_id', project.id)
 			: Promise.resolve({ data: [] as { hours: number; rate_at_entry: number }[] }),
 		listProjectPayments(project.id),
-		getUserPaymentMethods(),
 	]);
 
 	const stats = computeDashboardStats(
@@ -84,148 +76,106 @@ export default async function ProjectDashboardPage({
 		timeEntries ?? [],
 		payments,
 	);
-	const prepaidSettlement = computePrepaidSettlement(
-		payments.map((payment) => ({
-			id: payment.id,
-			amount: Number(payment.amount),
-			paid_at: payment.paid_at,
-		})),
-		(invoices ?? []).map((invoice) => ({
-			status: invoice.status,
-			total: Number(invoice.total),
-			issue_date: invoice.issue_date,
-		})),
-	);
 	const currencySymbol = getCurrencySymbol(project.currency);
-	const todayIso = format(new Date(), 'yyyy-MM-dd');
 
 	const monthlyEntries =
 		project.type === 'hourly' ? await getMonthlyEntries(project.id, sp.year, sp.month) : [];
 	const monthlyTotals = aggregateMonthly(monthlyEntries);
 
-	const statCards = [
-		{
-			title: 'کل قرارداد',
-			description: project.type === 'hourly' ? 'ارزش کل ساعات' : 'مبلغ کل پروژه',
-			value: `${formatMoney(stats.totalContract)} ${currencySymbol}`,
-			icon: CircleDollarSign,
-			className: 'text-foreground',
-		},
-		{
-			title: 'پرداخت‌شده',
-			description: 'فاکتورهای پرداخت‌شده',
-			value: `${formatMoney(stats.paid)} ${currencySymbol}`,
-			icon: Wallet,
-			className: 'text-emerald-600 dark:text-emerald-400',
-		},
-		{
-			title: 'در انتظار',
-			value: `${formatMoney(stats.pending)} ${currencySymbol}`,
-			icon: TrendingUp,
-			className: 'text-amber-600 dark:text-amber-400',
-		},
-		{
-			title: 'باقی‌مانده',
-			description: 'هنوز فاکتور نشده',
-			value: `${formatMoney(stats.remaining)} ${currencySymbol}`,
-			icon: CircleDollarSign,
-			className: 'text-foreground',
-		},
-		{
-			title: 'پیش‌پرداخت',
-			description:
-				stats.prepaidUnapplied > 0
-					? `${formatMoney(stats.prepaidUnapplied)} ${currencySymbol} هنوز تسویه نشده`
-					: 'کل پیش‌پرداخت دریافت‌شده',
-			value: `${formatMoney(stats.prepaid)} ${currencySymbol}`,
-			icon: HandCoins,
-			className: 'text-sky-600 dark:text-sky-400',
-		},
-		{
-			title: 'تراز پروژه',
-			description: getBalanceDescription(stats.balance),
-			value: `${formatMoney(stats.balance)} ${currencySymbol}`,
-			icon: Scale,
-			className:
-				stats.balance <= 0
-					? 'text-emerald-600 dark:text-emerald-400'
-					: 'text-foreground',
-		},
-	];
-
 	return (
-		<div className='space-y-6'>
-			<div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6'>
-				{statCards.map((card) => {
-					const Icon = card.icon;
+		<div className='space-y-6 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1rem)] md:pb-2'>
+			<Surface title='تراز پروژه' description={getBalanceDescription(stats.balance)}>
+				<p
+					className={`text-3xl font-black tabular-nums ${
+						stats.balance <= 0 ? 'text-success' : 'text-foreground'
+					}`}
+					dir='ltr'
+				>
+					{formatMoney(stats.balance)} {currencySymbol}
+				</p>
+			</Surface>
 
-					return (
-						<Card key={card.title} title={card.title} description={card.description}>
-							<div className='flex items-center gap-3'>
-								<div className='rounded-xl bg-muted p-2.5'>
-									<Icon size={20} className='text-primary' />
-								</div>
-								<p className={`text-xl font-black tabular-nums sm:text-2xl ${card.className}`}>
-									{card.value}
-								</p>
-							</div>
-						</Card>
-					);
-				})}
-			</div>
+			<MetricStrip
+				items={[
+					{
+						label: 'پرداخت‌شده',
+						value: `${formatMoney(stats.paid)} ${currencySymbol}`,
+						icon: Wallet,
+						tone: 'success',
+					},
+					{
+						label: 'در انتظار',
+						value: `${formatMoney(stats.pending)} ${currencySymbol}`,
+						icon: TrendingUp,
+						tone: 'warning',
+					},
+					{
+						label: 'باقی‌مانده',
+						value: `${formatMoney(stats.remaining)} ${currencySymbol}`,
+						icon: Scale,
+						tone: 'default',
+					},
+				]}
+			/>
 
-			<Card
-				title='پرداخت بدون فاکتور'
-				description='پیش‌پرداخت از کارفرما — در تراز پروژه لحاظ می‌شود'
-			>
-				<ProjectPaymentPanel
-					projectId={project.id}
-					currencySymbol={currencySymbol}
-					paymentMethods={paymentMethods}
-					initialPayments={payments}
-					appliedByPaymentId={Object.fromEntries(prepaidSettlement.appliedByPaymentId)}
-					defaultPaidAt={todayIso}
-				/>
-			</Card>
+			<Disclosure title='جزئیات مالی' description='قرارداد، پیش‌پرداخت و تراز'>
+				<div className='grid gap-3 sm:grid-cols-2'>
+					<div className='rounded-lg bg-muted/50 px-3 py-3'>
+						<p className='text-xs text-muted-foreground'>کل قرارداد</p>
+						<p className='mt-1 text-lg font-black tabular-nums' dir='ltr'>
+							{formatMoney(stats.totalContract)} {currencySymbol}
+						</p>
+					</div>
+					<div className='rounded-lg bg-muted/50 px-3 py-3'>
+						<p className='text-xs text-muted-foreground'>پیش‌پرداخت</p>
+						<p className='mt-1 text-lg font-black tabular-nums' dir='ltr'>
+							{formatMoney(stats.prepaid)} {currencySymbol}
+						</p>
+					</div>
+				</div>
+			</Disclosure>
 
 			{project.type === 'hourly' && (
-				<div className='space-y-4'>
-					<div className='flex items-center gap-2'>
-						<CalendarDays size={20} className='text-primary' aria-hidden />
-						<h2 className='text-lg font-bold text-foreground'>گزارش ماهانه</h2>
-					</div>
+				<Surface title='خلاصه ماه جاری'>
 					<Suspense fallback={<MonthPickerFallback />}>
 						<MonthPicker />
 					</Suspense>
-					<div key={`${sp.year}-${sp.month}`} className='grid gap-4 sm:grid-cols-2'>
-						<Card title='ساعات این ماه'>
-							<div className='flex items-center gap-3'>
-								<Clock size={20} className='text-primary' aria-hidden />
-								<p className='text-2xl font-black tabular-nums text-foreground' dir='ltr'>
-									{formatHoursAsDurationFa(monthlyTotals.totalHours)}
-								</p>
+					<div key={`${sp.year}-${sp.month}`} className='mt-4 grid grid-cols-2 gap-3'>
+						<div className='rounded-lg bg-muted/50 px-3 py-3'>
+							<div className='flex items-center gap-2 text-xs text-muted-foreground'>
+								<Clock size={14} />
+								ساعات
 							</div>
-						</Card>
-						<Card title='مبلغ این ماه'>
-							<div className='flex items-center gap-3'>
-								<CircleDollarSign size={20} className='text-emerald-600' />
-								<p className='text-2xl font-black tabular-nums text-foreground'>
-									{formatMoney(monthlyTotals.totalAmount)} {currencySymbol}
-								</p>
+							<p className='mt-1 text-xl font-black tabular-nums' dir='ltr'>
+								{formatHoursAsDurationFa(monthlyTotals.totalHours)}
+							</p>
+						</div>
+						<div className='rounded-lg bg-muted/50 px-3 py-3'>
+							<div className='flex items-center gap-2 text-xs text-muted-foreground'>
+								<CircleDollarSign size={14} />
+								مبلغ
 							</div>
-						</Card>
+							<p className='mt-1 text-xl font-black tabular-nums' dir='ltr'>
+								{formatMoney(monthlyTotals.totalAmount)} {currencySymbol}
+							</p>
+						</div>
 					</div>
-
-					{project.hourly_rate != null && (
-						<ProjectWhatIfCalculator
-							monthlyHours={monthlyTotals.totalHours}
-							monthlyAmount={monthlyTotals.totalAmount}
-							hourlyRate={Number(project.hourly_rate)}
-							currencySymbol={currencySymbol}
-						/>
-					)}
-				</div>
+					<div className='mt-4'>
+						<Link
+							href={ROUTES.projectTimesheet(project.id)}
+							className='text-sm font-bold text-primary hover:underline'
+						>
+							مشاهده جزئیات کار و تایم‌شیت
+						</Link>
+					</div>
+				</Surface>
 			)}
+
+			<ProjectActionBar
+				projectId={project.id}
+				projectType={project.type}
+				context='overview'
+			/>
 		</div>
 	);
 }

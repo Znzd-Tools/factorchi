@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
-import { Card } from '@/components/atoms/Card';
+import { ProjectActionBar } from '@/features/projects/components/ProjectActionBar';
+import { ProjectWorkShell } from '@/features/projects/components/ProjectWorkShell';
 import { ProjectTodoList } from '@/features/todos/components/ProjectTodoList';
 import { listProjectTodos } from '@/features/todos/queries/project-todo.queries';
 import { requireUser } from '@/lib/auth/require-user';
@@ -29,15 +30,20 @@ export default async function ProjectTodosPage({ params }: IProjectTodosPageProp
 	const todos = await listProjectTodos(id);
 
 	return (
-		<Card
-			title='کارها'
-			description='لیست کارهای پروژه؛ هنگام ثبت ساعت می‌توانی از همین لیست انتخاب کنی'
-		>
-			<ProjectTodoList
+		<div className='space-y-4 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom)+1rem)] md:pb-2'>
+			<ProjectWorkShell
 				projectId={id}
 				projectType={project.type}
-				initialTodos={todos}
+				timeContent={null}
+				todosContent={
+					<ProjectTodoList
+						projectId={id}
+						projectType={project.type}
+						initialTodos={todos}
+					/>
+				}
 			/>
-		</Card>
+			<ProjectActionBar projectId={id} projectType={project.type} context='work' />
+		</div>
 	);
 }

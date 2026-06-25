@@ -6,6 +6,7 @@ import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/atoms/Button';
+import { Disclosure } from '@/components/ui/Disclosure';
 import { Input } from '@/components/atoms/Input';
 import { TimeEntryForm } from '@/features/timesheet/components/TimeEntryForm';
 import { getDefaultWorkDateForMonth } from '@/features/timesheet/utils/month-params';
@@ -208,19 +209,20 @@ export function ProjectTodoList({ projectId, projectType, initialTodos }: IProje
 			</section>
 
 			{doneTodos.length > 0 && (
-				<section className='mt-6 space-y-2'>
-					<p className='text-sm font-bold text-muted-foreground'>
-						انجام‌شده ({toFaNumber(doneTodos.length)})
-					</p>
+				<Disclosure
+					title={`انجام‌شده (${toFaNumber(doneTodos.length)})`}
+					defaultOpen={false}
+					className='mt-6'
+				>
 					<ul className='space-y-2'>
 						{doneTodos.map((todo) => (
 							<li
 								key={todo.id}
 								className={cn(
-									'flex items-center gap-3 rounded-2xl border border-border bg-muted/40 px-3 py-3',
+									'flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-3 py-3',
 								)}
 							>
-								<span className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent'>
+								<span className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent'>
 									<Check size={18} aria-hidden />
 								</span>
 								<p className='min-w-0 flex-1 text-sm text-muted-foreground line-through'>
@@ -249,7 +251,7 @@ export function ProjectTodoList({ projectId, projectType, initialTodos }: IProje
 							</li>
 						))}
 					</ul>
-				</section>
+				</Disclosure>
 			)}
 
 			<TodoCompletePromptModal

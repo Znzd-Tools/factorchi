@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/atoms/Button';
 import { Select } from '@/components/atoms/Select';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Surface } from '@/components/ui/Surface';
 import { InvoiceCard } from '@/features/invoice/components/InvoiceCard';
 import { InvoiceStatusTimeline } from '@/features/invoice/components/InvoiceStatusTimeline';
 import { ROUTES } from '@/config/routes';
@@ -26,57 +28,13 @@ interface IInvoiceListProps {
 
 const ALL_STATUS_FILTER = 'all' as const;
 
-function InvoiceTableRow({
-	projectId,
-	invoice,
-	currencySymbol,
-	isPending,
-	onAdvance,
-}: {
-	projectId: string;
-	invoice: InvoiceWithLineItems;
-	currencySymbol: string;
-	isPending: boolean;
-	onAdvance: (invoiceId: string, nextStatus: InvoiceStatus) => void;
-}) {
-	return (
-		<tr className='align-top'>
-			<td className='px-4 py-4'>
-				<Link
-					href={ROUTES.projectInvoice(projectId, invoice.id)}
-					className='font-bold tabular-nums text-primary hover:underline'
-					dir='ltr'
-				>
-					{invoice.invoice_no}
-				</Link>
-				<p className='mt-1 text-xs text-muted-foreground'>{formatJalaliDate(invoice.issue_date)}</p>
-			</td>
-			<td className='px-4 py-4 text-muted-foreground'>
-				{invoice.period_start && invoice.period_end
-					? `${formatJalaliDate(invoice.period_start)} — ${formatJalaliDate(invoice.period_end)}`
-					: invoice.percentage
-						? `${invoice.percentage}٪`
-						: '—'}
-			</td>
-			<td className='px-4 py-4 font-bold tabular-nums'>
-				{formatMoney(invoice.total)} {currencySymbol}
-			</td>
-			<td className='min-w-[280px] px-4 py-4'>
-				<InvoiceStatusTimeline
-					status={invoice.status}
-					onAdvance={(next) => onAdvance(invoice.id, next)}
-					pending={isPending}
-					compact
-				/>
-			</td>
-		</tr>
-	);
-}
+const STATUS_ORDER: InvoiceStatus[] = ['overdue', 'sent', 'draft', 'paid', 'canceled'];
 
 export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps) {
 	const [statusFilter, setStatusFilter] = useState<InvoiceStatus | typeof ALL_STATUS_FILTER>(
 		ALL_STATUS_FILTER,
 	);
+	const [selectedId, setSelectedId] = useState<string | null>(invoices[0]?.id ?? null);
 	const [isPending, startTransition] = useTransition();
 	const { trigger: triggerCelebration } = useCelebration();
 
@@ -89,6 +47,21 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 
 		return invoices.filter((invoice) => invoice.status === statusFilter);
 	}, [invoices, statusFilter]);
+
+	const groupedInvoices = useMemo(() => {
+		const groups = new Map<InvoiceStatus, InvoiceWithLineItems[]>();
+
+		for (const status of STATUS_ORDER) {
+			const items = filteredInvoices.filter((invoice) => invoice.status === status);
+			if (items.length > 0) {
+				groups.set(status, items);
+			}
+		}
+
+		return groups;
+	}, [filteredInvoices]);
+
+	const selectedInvoice = filteredInvoices.find((invoice) => invoice.id === selectedId) ?? null;
 
 	const handleAdvance = (invoiceId: string, nextStatus: InvoiceStatus) => {
 		startTransition(async () => {
@@ -132,12 +105,12 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 			</div>
 
 			{filteredInvoices.length === 0 ? (
-				<div className='rounded-2xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground'>
+				<div className='rounded-xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground'>
 					فاکتوری یافت نشد.
 				</div>
 			) : (
-				<>
-					<div className='space-y-3 md:hidden'>
+				<div className='grid gap-4 lg:grid-cols-[1fr_20rem] lg:items-start'>
+					<div className='space-y-4 md:hidden'>
 						{filteredInvoices.map((invoice) => (
 							<InvoiceCard
 								key={invoice.id}
@@ -148,31 +121,80 @@ export function InvoiceList({ projectId, invoices, currency }: IInvoiceListProps
 						))}
 					</div>
 
-					<div className='hidden overflow-x-auto rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)] md:block'>
-						<table className='w-full min-w-[720px] text-right text-sm'>
-							<thead className='bg-muted text-muted-foreground'>
-								<tr>
-									<th className='px-4 py-3 font-bold'>شماره</th>
-									<th className='px-4 py-3 font-bold'>بازه / درصد</th>
-									<th className='px-4 py-3 font-bold'>مبلغ</th>
-									<th className='px-4 py-3 font-bold'>مسیر وضعیت</th>
-								</tr>
-							</thead>
-							<tbody className='divide-y divide-border'>
-								{filteredInvoices.map((invoice) => (
-									<InvoiceTableRow
-										key={invoice.id}
-										projectId={projectId}
-										invoice={invoice}
-										currencySymbol={currencySymbol}
-										isPending={isPending}
-										onAdvance={handleAdvance}
-									/>
-								))}
-							</tbody>
-						</table>
+					<div className='hidden space-y-4 md:block'>
+						{[...groupedInvoices.entries()].map(([status, items]) => (
+							<div key={status} className='space-y-2'>
+								<div className='flex items-center gap-2'>
+									<StatusBadge label={INVOICE_STATUS_LABELS[status]} tone='neutral' />
+									<span className='text-xs text-muted-foreground'>{items.length} مورد</span>
+								</div>
+								<ul className='space-y-1'>
+									{items.map((invoice) => (
+										<li key={invoice.id}>
+											<button
+												type='button'
+												onClick={() => setSelectedId(invoice.id)}
+												className={`w-full rounded-lg border px-3 py-3 text-start transition-colors ${
+													selectedId === invoice.id
+														? 'border-primary bg-primary/5'
+														: 'border-border bg-card hover:bg-muted/50'
+												}`}
+											>
+												<div className='flex items-center justify-between gap-2'>
+													<span className='font-bold tabular-nums text-primary' dir='ltr'>
+														{invoice.invoice_no}
+													</span>
+													<span className='font-black tabular-nums'>
+														{formatMoney(invoice.total)} {currencySymbol}
+													</span>
+												</div>
+												<p className='mt-1 text-xs text-muted-foreground'>
+													{formatJalaliDate(invoice.issue_date)}
+												</p>
+											</button>
+										</li>
+									))}
+								</ul>
+							</div>
+						))}
 					</div>
-				</>
+
+					{selectedInvoice && (
+						<Surface title='جزئیات فاکتور' className='hidden md:block'>
+							<div className='space-y-3 text-sm'>
+								<div className='flex flex-wrap items-center justify-between gap-2'>
+									<Link
+										href={ROUTES.projectInvoice(projectId, selectedInvoice.id)}
+										className='font-bold tabular-nums text-primary hover:underline'
+										dir='ltr'
+									>
+										{selectedInvoice.invoice_no}
+									</Link>
+									<StatusBadge
+										label={INVOICE_STATUS_LABELS[selectedInvoice.status]}
+										tone='info'
+									/>
+								</div>
+								<p className='text-muted-foreground'>
+									{formatJalaliDate(selectedInvoice.issue_date)}
+								</p>
+								<p className='text-lg font-black tabular-nums'>
+									{formatMoney(selectedInvoice.total)} {currencySymbol}
+								</p>
+								<InvoiceStatusTimeline
+									status={selectedInvoice.status}
+									onAdvance={(next) => handleAdvance(selectedInvoice.id, next)}
+									pending={isPending}
+								/>
+								<Link href={ROUTES.projectInvoice(projectId, selectedInvoice.id)}>
+									<Button variant='secondary' fullWidth>
+										مشاهده و چاپ
+									</Button>
+								</Link>
+							</div>
+						</Surface>
+					)}
+				</div>
 			)}
 		</div>
 	);

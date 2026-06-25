@@ -1,11 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { Card } from '@/components/atoms/Card';
+import { Surface } from '@/components/ui/Surface';
 import { ROUTES } from '@/config/routes';
-import {
-	getUserPaymentMethods,
-} from '@/features/invoice/actions/invoice.actions';
+import { getUserPaymentMethods } from '@/features/invoice/actions/invoice.actions';
 import { InvoiceGeneratorForm } from '@/features/invoice/components/InvoiceGeneratorForm';
 import { createClient } from '@/lib/supabase/server';
 
@@ -50,31 +48,31 @@ export default async function NewInvoicePage({ params }: INewInvoicePageProps) {
 	}
 
 	return (
-		<div className='space-y-6'>
+		<div className='space-y-6 pb-6'>
 			<div>
 				<Link
 					href={ROUTES.projectInvoices(project.id)}
-					className='text-sm text-blue-600 hover:underline'
+					className='text-sm font-bold text-primary hover:underline'
 				>
-					← بازگشت به فاکتورها
+					بازگشت به فاکتورها
 				</Link>
-				<h1 className='mt-2 text-2xl font-black text-slate-900'>
-					صدور فاکتور جدید — {project.name}
+				<h1 className='mt-2 text-2xl font-black text-foreground'>
+					صدور فاکتور — {project.name}
 				</h1>
-				<p className='mt-1 text-sm text-slate-500'>
+				<p className='mt-1 text-sm text-muted-foreground'>
 					{project.type === 'hourly'
 						? 'بر اساس ساعات ثبت‌شده در بازه زمانی'
 						: 'بر اساس درصد از مبلغ کل پروژه'}
 				</p>
 			</div>
 
-			<Card title='اطلاعات فاکتور'>
+			<Surface title='مراحل صدور فاکتور'>
 				<InvoiceGeneratorForm
 					project={project}
 					paymentMethods={paymentMethods}
 					timeEntries={timeEntries}
 				/>
-			</Card>
+			</Surface>
 		</div>
 	);
 }
